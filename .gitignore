@@ -45,4 +45,8 @@ app.*.map.json
 /android/app/release
 
 /node_modules
-/api/node_modules
+
+
+# Node
+api/node_modules
+api/.env
