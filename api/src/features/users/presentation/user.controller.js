@@ -40,23 +40,31 @@ const remove = async (req, res, next) => {
 //mot de passe oublié
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
+  console.log("--- Tentative d'envoi pour :", email, "---");
+
   try {
     const user = await datasource.findByEmail(email);
-    if (user.rows.length === 0) return res.status(404).json({ error: "Email non trouvé" });
+    
+    if (user.rows.length === 0) {
+      console.log(" Résultat : Email non trouvé en base.");
+      return res.status(404).json({ error: "Email non trouvé" });
+    }
 
     // 1. Générer le token
     const token = crypto.randomBytes(20).toString('hex');
-    const expires = new Date(Date.now() + 3600000); // 1 heure de validité
+    const expires = new Date(Date.now() + 3600000); 
 
     // 2. Sauvegarder en base
     await datasource.saveResetToken(email, token, expires);
+    console.log("Token enregistré en base PostgreSQL.");
 
-    // 3. Configurer l'envoi du mail (Exemple avec Gmail ou Mailtrap)
+    // 3. Configurer l'envoi du mail
+    console.log(" Configuration de Nodemailer avec :", process.env.EMAIL_USER);
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS // Mot de passe d'application Google
+        pass: process.env.EMAIL_PASS 
       }
     });
 
@@ -67,10 +75,15 @@ const forgotPassword = async (req, res) => {
             `Cliquez sur le lien suivant : http://localhost:3000/reset/${token}\n`
     };
 
-    await transporter.sendMail(mailOptions);
+    // 4. L'envoi réel
+    console.log("Envoi du mail en cours...");
+    const info = await transporter.sendMail(mailOptions);
+    
+    console.log("Email envoyé ! Réponse du serveur :", info.response);
     res.status(200).json({ message: "Email de récupération envoyé !" });
 
   } catch (err) {
+    console.error("ERREUR DÉTECTÉE :", err.message);
     res.status(500).json({ error: err.message });
   }
 };
