@@ -6,6 +6,13 @@ const findByEmail = (email) =>
 const findById = (id) =>
   db.query('SELECT * FROM utilisateur WHERE codeutilisateur = $1', [id]);
 
+const generateCodeUtilisateur = async () => {
+  const query = 'SELECT MAX(codeutilisateur) FROM utilisateur';
+  const result = await db.query(query);
+  const maxCode = parseInt(result.rows[0].max.substring(1));
+  return `U${maxCode + 1}`;
+};
+
 const create = async (user) => {
   const findQuery = 'SELECT codefonction FROM fonction WHERE nomfonction = $1';
   let fonctionRes = await db.query(findQuery, [user.nomfonction]);
@@ -18,11 +25,11 @@ const create = async (user) => {
   } else {
     codeFonction = fonctionRes.rows[0].codefonction;
   }
-
+  const codeUtilisateur = await generateCodeUtilisateur();
   return db.query(
-    `INSERT INTO utilisateur (codefonction, nom, prenoms, numcin, datecin, lieucin, adresse, role, email, mdp)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-    [codeFonction, user.nom, user.prenoms, user.numCIN, user.dateCIN,
+    `INSERT INTO utilisateur (codeutilisateur, codefonction, nom, prenoms, numcin, datecin, lieucin, adresse, role, email, mdp)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+    [codeUtilisateur, codeFonction, user.nom, user.prenoms, user.numCIN, user.dateCIN,
      user.lieuCIN, user.adresse, user.role || 'user', user.email, user.mdp]
   );
 };
