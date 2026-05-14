@@ -1,13 +1,22 @@
 const db = require("../../../core/database/db");
 
 class AnnonceDatasource {
-  generateCode = async () => {
-    const query = "SELECT count(*) FROM public.annonce";
+  async generateCode() {
+    // On cherche le code le plus élevé au lieu de compter
+    const query =
+      'SELECT "codeAnnonce" FROM public.annonce ORDER BY "codeAnnonce" DESC LIMIT 1';
     const result = await db.query(query);
-    // parseInt est important car count retourne une string en pg
-    const count = parseInt(result.rows[0].count) + 1;
-    return `AN${count.toString().padStart(3, "0")}`;
-  };
+
+    let nextNumber = 1;
+    if (result.rows.length > 0) {
+      // On extrait le nombre du code (ex: "AN005" -> 5) et on ajoute 1
+      const lastCode = result.rows[0].codeAnnonce;
+      const lastNumber = parseInt(lastCode.replace("AN", ""));
+      nextNumber = lastNumber + 1;
+    }
+
+    return `AN${nextNumber.toString().padStart(3, "0")}`;
+  }
 
   create = async (data) => {
     const codeAnnonce = await this.generateCode();
@@ -26,14 +35,19 @@ class AnnonceDatasource {
     const result = await db.query(query, values);
     return result.rows[0];
   };
-
   async getAll(search = "") {
     const query = `
-      SELECT a.*, c.nomcategorie 
+      SELECT 
+        a.*, 
+        c.nomcategorie,
+        COALESCE(json_agg(pj.lien) FILTER (WHERE pj.lien IS NOT NULL), '[]') AS images
       FROM public.annonce a
       LEFT JOIN public.categorie c ON a.codecategorie = c.codecategorie
+      LEFT JOIN public.pjannonce pj ON a."codeAnnonce" = pj.codeannonce
       WHERE a.contenuannonce ILIKE $1 
+      GROUP BY a."codeAnnonce", c.nomcategorie, a.latitude, a.longitude, a.codecategorie, a.dateannonce, a.contenuannonce
       ORDER BY a.dateannonce DESC`;
+
     const result = await db.query(query, [`%${search}%`]);
     return result.rows;
   }
@@ -54,17 +68,25 @@ class AnnonceDatasource {
     return result.rows[0];
   }
 
-  async delete(id) {
-    // Suppression des liens avec les PJ d'abord (intégrité référentielle)
-    await db.query("DELETE FROM public.pjannonce WHERE codeannonce = $1", [id]);
-    await db.query('DELETE FROM public.annonce WHERE "codeAnnonce" = $1', [id]);
-    return { success: true };
+  async getImagesByAnnonce(codeAnnonce) {
+    const query = "SELECT lien FROM public.pjannonce WHERE codeannonce = $1";
+    const result = await db.query(query, [codeAnnonce]);
+    return result.rows; // Retourne un tableau d'objets [{lien: '...'}, ...]
+  }
+
+  // La méthode de suppression de l'annonce
+  async delete(codeAnnonce) {
+    const query = 'DELETE FROM public.annonce WHERE "codeAnnonce" = $1';
+    const result = await db.query(query, [codeAnnonce]);
+    return result.rowCount > 0;
   }
 
   async linkPJ(codeAnnonce, lien) {
+    // On insère dans PJANNONCE qui fait le lien entre l'annonce et la pièce jointe
     const query =
-      "INSERT INTO public.pjannonce (codeannonce, lien) VALUES ($1, $2)";
-    await db.query(query, [codeAnnonce, lien]);
+      "INSERT INTO public.pjannonce (codeannonce, lien) VALUES ($1, $2) RETURNING *";
+    const result = await db.query(query, [codeAnnonce, lien]);
+    return result.rows[0];
   }
 }
 

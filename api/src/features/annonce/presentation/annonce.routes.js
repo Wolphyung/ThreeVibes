@@ -5,11 +5,12 @@ const AnnonceController = require("./annonce.controller");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.get("/", (req, res) => AnnonceController.list(req, res));
-router.post("/", upload.single("file"), (req, res) =>
-  AnnonceController.create(req, res),
-);
-router.put("/:id", (req, res) => AnnonceController.update(req, res));
-router.delete("/:id", (req, res) => AnnonceController.remove(req, res));
+// src/features/annonce/presentation/annonce.routes.js
+
+router.get("/", AnnonceController.list);
+router.put("/:id", AnnonceController.update);
+// On autorise jusqu'à 5 fichiers simultanés
+router.post("/", upload.array("files", 5), AnnonceController.create);
+router.delete("/:id", AnnonceController.remove);
 
 module.exports = router;

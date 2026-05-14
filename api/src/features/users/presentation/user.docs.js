@@ -1,8 +1,3 @@
-const express = require('express');
-const userController = require('./user.controller');
-
-const router = express.Router();
-
 /**
  * @swagger
  * /users:
@@ -22,7 +17,6 @@ const router = express.Router();
  *                   items:
  *                     type: object
  */
-router.get('/', userController.getAllUsers);
 
 /**
  * @swagger
@@ -43,6 +37,3 @@ router.get('/', userController.getAllUsers);
  *       404:
  *         description: User not found
  */
-router.get('/:id', userController.getUserById);
-
-module.exports = router;
