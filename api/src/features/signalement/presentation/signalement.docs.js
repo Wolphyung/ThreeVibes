@@ -31,6 +31,7 @@
  *               - latitude
  *               - longitude
  *               - codeUtilisateur
+ *               - fonctions
  *               - files
  *             properties:
  *               typeSignalement:
@@ -48,6 +49,11 @@
  *                 format: float
  *               codeUtilisateur:
  *                 type: string
+ *               fonctions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: List of fonction codes to assign (e.g. F0001)
  *               files:
  *                 type: array
  *                 items:
@@ -131,4 +137,93 @@
  *         description: Signalement deleted successfully
  *       404:
  *         description: Signalement not found
+ */
+
+/**
+ * @swagger
+ * /signalements/by-fonction/{codeFonction}:
+ *   get:
+ *     tags: [Specialisations]
+ *     summary: Get all signalements assigned to a fonction
+ *     parameters:
+ *       - in: path
+ *         name: codeFonction
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Fonction code (e.g. F0001)
+ *     responses:
+ *       200:
+ *         description: List of signalements for the given fonction
+ */
+
+/**
+ * @swagger
+ * /signalements/{code}/specialisations:
+ *   get:
+ *     tags: [Specialisations]
+ *     summary: Get all fonctions assigned to a signalement
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Signalement code (e.g. S0001)
+ *     responses:
+ *       200:
+ *         description: List of fonctions for the signalement
+ *   post:
+ *     tags: [Specialisations]
+ *     summary: Assign a fonction to a signalement
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Signalement code (e.g. S0001)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - codeFonction
+ *             properties:
+ *               codeFonction:
+ *                 type: string
+ *                 description: Fonction code to assign (e.g. F0001)
+ *     responses:
+ *       201:
+ *         description: Fonction assigned to signalement
+ *       400:
+ *         description: codeFonction is required
+ */
+
+/**
+ * @swagger
+ * /signalements/{code}/specialisations/{codeFonction}:
+ *   delete:
+ *     tags: [Specialisations]
+ *     summary: Remove a fonction from a signalement
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Signalement code (e.g. S0001)
+ *       - in: path
+ *         name: codeFonction
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Fonction code to remove (e.g. F0001)
+ *     responses:
+ *       200:
+ *         description: Fonction removed from signalement
+ *       404:
+ *         description: Specialisation not found
  */

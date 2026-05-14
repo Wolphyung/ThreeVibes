@@ -11,6 +11,9 @@ const upload = multer({ storage: storage });
 // GET /api/signalements — list all
 router.get('/', (req, res) => SignalementController.getAll(req, res));
 
+// GET /api/signalements/by-fonction/:codeFonction — signalements by fonction
+router.get('/by-fonction/:codeFonction', (req, res) => SignalementController.getByFonction(req, res));
+
 // GET /api/signalements/:code — get one with PJs
 router.get('/:code', (req, res) => SignalementController.getById(req, res));
 
@@ -22,5 +25,16 @@ router.put('/:code', (req, res) => SignalementController.update(req, res));
 
 // DELETE /api/signalements/:code — delete
 router.delete('/:code', (req, res) => SignalementController.delete(req, res));
+
+// --- SPECIALISER ---
+
+// GET /api/signalements/:code/specialisations — fonctions for a signalement
+router.get('/:code/specialisations', (req, res) => SignalementController.getSpecialisations(req, res));
+
+// POST /api/signalements/:code/specialisations — assign a fonction
+router.post('/:code/specialisations', (req, res) => SignalementController.addSpecialisation(req, res));
+
+// DELETE /api/signalements/:code/specialisations/:codeFonction — remove a fonction
+router.delete('/:code/specialisations/:codeFonction', (req, res) => SignalementController.removeSpecialisation(req, res));
 
 module.exports = router;

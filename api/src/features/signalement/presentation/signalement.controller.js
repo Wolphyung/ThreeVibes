@@ -10,8 +10,8 @@ class SignalementController {
       if (!PJs || PJs.length === 0) {
         return res.status(400).json({ error: 'Please upload at least one file' });
       }
-
-      const response = await SignalementService.createSignalement(signalement, PJs);
+      const fonctions = req.body.fonctions || [];
+      const response = await SignalementService.createSignalement(signalement, PJs, fonctions);
       res.status(201).json({
         message: 'Signalement created successfully',
         data: response
@@ -77,6 +77,66 @@ class SignalementController {
       if (error.message === 'Signalement not found') {
         return res.status(404).json({ error: error.message });
       }
+      res.status(500).json({ error: error.message });
+    }
+  }
+  // ==========================================
+  // SPECIALISER
+  // ==========================================
+
+  // POST /api/signalements/:code/specialisations
+  async addSpecialisation(req, res) {
+    try {
+      const { code } = req.params;
+      const { codeFonction } = req.body;
+      if (!codeFonction) {
+        return res.status(400).json({ error: 'codeFonction is required' });
+      }
+      const result = await SignalementService.addSpecialisation(code, codeFonction);
+      res.status(201).json({
+        message: 'Fonction assigned to signalement',
+        data: result
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // DELETE /api/signalements/:code/specialisations/:codeFonction
+  async removeSpecialisation(req, res) {
+    try {
+      const { code, codeFonction } = req.params;
+      const result = await SignalementService.removeSpecialisation(code, codeFonction);
+      res.status(200).json({
+        message: 'Fonction removed from signalement',
+        data: result
+      });
+    } catch (error) {
+      if (error.message === 'Specialisation not found') {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // GET /api/signalements/:code/specialisations
+  async getSpecialisations(req, res) {
+    try {
+      const { code } = req.params;
+      const result = await SignalementService.getSpecialisationsBySignalement(code);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // GET /api/signalements/by-fonction/:codeFonction
+  async getByFonction(req, res) {
+    try {
+      const { codeFonction } = req.params;
+      const result = await SignalementService.getSignalementsByFonction(codeFonction);
+      res.status(200).json({ data: result });
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }

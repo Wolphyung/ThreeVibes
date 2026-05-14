@@ -11,7 +11,7 @@ class SignalementDatasource {
   }
 
   // CREATE
-  async createSignalement(signalement, PJs) {
+  async createSignalement(signalement, PJs, fonctions) {
     const lastCodeResult = await db.query('SELECT codeSignalement FROM SIGNALEMENT ORDER BY codeSignalement DESC LIMIT 1');
     const lastCode = lastCodeResult.rows[0]?.codesignalement;
     const newCode = this.generateNextCode(lastCode);
@@ -24,7 +24,15 @@ class SignalementDatasource {
     await Promise.all(links.map(async (link) => {
       await pjService.linkToSignalement(result.rows[0].codesignalement, link.url);
     }));
-    return { signalement: result.rows[0], PJ: links };
+    let specialisations = []
+    if (fonctions && fonctions.length > 0) {
+      specialisations = fonctions.split(',');
+      await Promise.all(specialisations.map(async (codeFonction) => {
+        await this.addSpecialisation(newCode, codeFonction);
+      }));
+    }
+
+    return { signalement: result.rows[0], PJ: links, fonctions: specialisations };
   }
 
   // READ ALL
@@ -77,6 +85,46 @@ class SignalementDatasource {
     // Delete the signalement
     const result = await db.query('DELETE FROM SIGNALEMENT WHERE codeSignalement = $1 RETURNING *', [codeSignalement]);
     return result.rows[0];
+  }
+
+
+  // ==========================================
+  // SPECIALISER (Fonction ↔ Signalement)
+  // ==========================================
+
+  // Assign a fonction to a signalement
+  async addSpecialisation(codeSignalement, codeFonction) {
+    const query = 'INSERT INTO SPECIALISER (CODEFONCTION, CODESIGNALEMENT) VALUES ($1, $2) RETURNING *';
+    const result = await db.query(query, [codeFonction, codeSignalement]);
+    return result.rows[0];
+  }
+
+  // Remove a fonction from a signalement
+  async removeSpecialisation(codeSignalement, codeFonction) {
+    const query = 'DELETE FROM SPECIALISER WHERE CODEFONCTION = $1 AND CODESIGNALEMENT = $2 RETURNING *';
+    const result = await db.query(query, [codeFonction, codeSignalement]);
+    return result.rows[0];
+  }
+
+  // Get all fonctions assigned to a signalement
+  async getSpecialisationsBySignalement(codeSignalement) {
+    const query = `SELECT S.*, F.NOMFONCTION 
+      FROM SPECIALISER S 
+      JOIN FONCTION F ON S.CODEFONCTION = F.CODEFONCTION 
+      WHERE S.CODESIGNALEMENT = $1`;
+    const result = await db.query(query, [codeSignalement]);
+    return result.rows;
+  }
+
+  // Get all signalements assigned to a fonction
+  async getSignalementsByFonction(codeFonction) {
+    const query = `SELECT SIG.* 
+      FROM SPECIALISER S 
+      JOIN SIGNALEMENT SIG ON S.CODESIGNALEMENT = SIG.CODESIGNALEMENT 
+      WHERE S.CODEFONCTION = $1
+      ORDER BY SIG.DATESIGNALEMENT DESC`;
+    const result = await db.query(query, [codeFonction]);
+    return result.rows;
   }
 }
 
