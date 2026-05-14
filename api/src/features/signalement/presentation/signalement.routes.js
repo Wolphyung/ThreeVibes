@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const PJController = require('./pj.controller');
+const SignalementController = require('./signalement.controller');
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// POST /api/PJs/upload
-router.post('/upload', upload.single('file'), (req, res) => PJController.upload(req, res));
+// POST /api/signalement/create
+router.post('/', upload.array('files', 10), (req, res) => SignalementController.create(req, res));
 
 module.exports = router;
