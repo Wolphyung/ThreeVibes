@@ -36,6 +36,17 @@ class NotificationService {
       timestamp: new Date().toISOString(),
     });
   }
+
+  /**
+   * Broadcast a message to all connected users.
+   */
+  broadcast(event, data) {
+    const io = getIO();
+    io.emit(event, {
+      ...data,
+      timestamp: new Date().toISOString(),
+    });
+  }
 }
 
 module.exports = new NotificationService();

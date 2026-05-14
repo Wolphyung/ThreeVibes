@@ -5,6 +5,8 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("../core/config/swagger");
 const routes = require("../routes");
 const annonceRoutes = require("../features/annonce/presentation/annonce.routes");
+require('dotenv').config({ path: require('path').resolve(__dirname, '..', '..', '.env') });
+
 
 const app = express();
 
@@ -17,10 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // Swagger documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Routes spécifiques aux annonces
-app.use("/api/annonces", annonceRoutes);
-
-// Autres routes de l'index
+// Main API routes (includes annonces, users, weather, etc.)
 app.use("/api", routes);
 
 // Base route

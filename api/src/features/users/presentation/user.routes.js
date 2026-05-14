@@ -1,48 +1,41 @@
-const express = require('express');
-const userController = require('./user.controller');
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
+const verifyToken = require("../../../middlewares/auth.middleware");
+const router = require("express").Router();
 
-const router = express.Router();
+const {
+  register,
+  login,
+  update,
+  remove,
+  forgotPassword,
+  resetPassword,
+  getMe,
+  getAll,
+  listFonctions,
+  getFonction,
+  createFonction,
+  updateFonction,
+  deleteFonction,
+} = require("./user.controller");
 
-/**
- * @swagger
- * /users:
- *   get:
- *     tags: [Users]
- *     summary: Get all users
- *     responses:
- *       200:
- *         description: List of all users
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- */
-router.get('/', userController.getAllUsers);
+// --- AUTHENTICATION ---
+router.post("/register", upload.single("image"), register);
+router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
-/**
- * @swagger
- * /users/{id}:
- *   get:
- *     tags: [Users]
- *     summary: Get a user by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: User code (e.g. U0001)
- *     responses:
- *       200:
- *         description: User found
- *       404:
- *         description: User not found
- */
-router.get('/:id', userController.getUserById);
+// --- PROFILE & USERS ---
+router.get("/me", verifyToken, getMe);
+router.get("/", getAll);
+router.put("/:id", upload.single("image"), update);
+router.delete("/:id", remove);
+
+// --- FONCTION ROUTES ---
+router.get("/fonctions", listFonctions);
+router.get("/fonctions/:id", getFonction);
+router.post("/fonctions", createFonction);
+router.put("/fonctions/:id", updateFonction);
+router.delete("/fonctions/:id", deleteFonction);
 
 module.exports = router;
