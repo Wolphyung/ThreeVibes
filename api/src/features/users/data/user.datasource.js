@@ -1,41 +1,45 @@
-const db = require('../../../core/database/db');
-const pjService = require('../../piece-jointe/domain/pj.service');
-const pjController = require('../../piece-jointe/presentation/pj.controller');
+const db = require("../../../core/database/db");
+const pjService = require("../../piece-jointe/domain/pj.service");
+const pjController = require("../../piece-jointe/presentation/pj.controller");
 
 const findByEmail = (email) =>
-  db.query('SELECT * FROM utilisateur WHERE email = $1', [email]);
+  db.query("SELECT * FROM utilisateur WHERE email = $1", [email]);
 
 const findById = (id) =>
-  db.query('SELECT * FROM utilisateur WHERE codeutilisateur = $1', [id]);
+  db.query("SELECT * FROM utilisateur WHERE codeutilisateur = $1", [id]);
 
 const generateCodeUtilisateur = async () => {
-    const result = await db.query('SELECT codeutilisateur FROM utilisateur ORDER BY codeutilisateur DESC LIMIT 1');
-    let nextNumber = 1;
+  const result = await db.query(
+    "SELECT codeutilisateur FROM utilisateur ORDER BY codeutilisateur DESC LIMIT 1",
+  );
+  let nextNumber = 1;
 
-    if (result.rows.length > 0) {
-        const lastCode = result.rows[0].codeutilisateur;
-        const lastNumber = parseInt(lastCode.replace("U", ""));
-        nextNumber = lastNumber + 1;
-    }
+  if (result.rows.length > 0) {
+    const lastCode = result.rows[0].codeutilisateur;
+    const lastNumber = parseInt(lastCode.replace("U", ""));
+    nextNumber = lastNumber + 1;
+  }
 
-    return `U${nextNumber.toString().padStart(4, "0")}`;
+  return `U${nextNumber.toString().padStart(4, "0")}`;
 };
 
 const generateCodeFonction = async () => {
-    const result = await db.query('SELECT codefonction FROM fonction ORDER BY codefonction DESC LIMIT 1');
-    let nextNumber = 1;
+  const result = await db.query(
+    "SELECT codefonction FROM fonction ORDER BY codefonction DESC LIMIT 1",
+  );
+  let nextNumber = 1;
 
-    if (result.rows.length > 0) {
-        const lastCode = result.rows[0].codefonction;
-        const lastNumber = parseInt(lastCode.replace("FO", ""));
-        nextNumber = lastNumber + 1;
-    }
+  if (result.rows.length > 0) {
+    const lastCode = result.rows[0].codefonction;
+    const lastNumber = parseInt(lastCode.replace("FO", ""));
+    nextNumber = lastNumber + 1;
+  }
 
-    return `FO${nextNumber.toString().padStart(3, "0")}`;
+  return `FO${nextNumber.toString().padStart(3, "0")}`;
 };
 
 const create = async (user, file) => {
-  const findQuery = 'SELECT codefonction FROM fonction WHERE nomfonction = $1';
+  const findQuery = "SELECT codefonction FROM fonction WHERE nomfonction = $1";
   let fonctionRes = await db.query(findQuery, [user.nomfonction]);
 
   let codeFonction;
@@ -58,22 +62,24 @@ const create = async (user, file) => {
   return db.query(
     `INSERT INTO utilisateur (codeutilisateur, codefonction, nom, prenoms, numcin, datecin, lieucin, adresse, role, email, mdp, image_url)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-    [codeUtilisateur, codeFonction, user.nom, user.prenoms, user.numCIN, user.dateCIN,
-     user.lieuCIN, user.adresse, user.role || 'user', user.email, user.mdp, imageUrl]
+    [
+      codeUtilisateur,
+      codeFonction,
+      user.nom,
+      user.prenoms,
+      user.numCIN,
+      user.dateCIN,
+      user.lieuCIN,
+      user.adresse,
+      user.role || "user",
+      user.email,
+      user.mdp,
+      imageUrl,
+    ],
   );
 };
-
-<<<<<<< HEAD
+j;
 const update = (id, user, fileUrl = null) => {
-=======
-const update = async (id, user, file = null) => {
-  let fileUrl = null;
-  if (file) {
-    const fileRes = await pjService.uploadAndSave(file);
-    fileUrl = fileRes.url;
-  }
-
->>>>>>> 73904af4531c335332c27d955fb36665d9b72e56
   return db.query(
     `UPDATE utilisateur SET 
       nom = COALESCE($1, nom), 
@@ -86,46 +92,50 @@ const update = async (id, user, file = null) => {
       email = COALESCE($8, email),
       image_url = COALESCE($9, image_url)
      WHERE codeutilisateur = $10 RETURNING *`,
-    [user.nom || null, user.prenoms || null, user.numCIN || null, user.dateCIN || null,
-     user.lieuCIN || null, user.adresse || null, user.role || null, user.email || null, 
-<<<<<<< HEAD
-     fileUrl || user.image_url || null, id]
-=======
-     fileUrl || null, id]
->>>>>>> 73904af4531c335332c27d955fb36665d9b72e56
+    [
+      user.nom || null,
+      user.prenoms || null,
+      user.numCIN || null,
+      user.dateCIN || null,
+      user.lieuCIN || null,
+      user.adresse || null,
+      user.role || null,
+      user.email || null,
+      fileUrl || null,
+      fileUrl || user.image_url || null,
+      id,
+    ],
   );
 };
 
 const remove = (id) =>
-  db.query('DELETE FROM utilisateur WHERE codeutilisateur = $1 RETURNING *', [id]);
+  db.query("DELETE FROM utilisateur WHERE codeutilisateur = $1 RETURNING *", [
+    id,
+  ]);
 
 //cas de mdp oublié
 const saveResetToken = (email, token, expires) => {
   return db.query(
-    'UPDATE utilisateur SET reset_token = $1, reset_expires = $2 WHERE email = $3',
-    [token, expires, email]
+    "UPDATE utilisateur SET reset_token = $1, reset_expires = $2 WHERE email = $3",
+    [token, expires, email],
   );
 };
 
 const findByResetToken = (token) => {
   // On cherche l'user dont le token correspond et n'est pas encore expiré
   return db.query(
-    'SELECT * FROM utilisateur WHERE reset_token = $1 AND reset_expires > NOW()',
-    [token]
+    "SELECT * FROM utilisateur WHERE reset_token = $1 AND reset_expires > NOW()",
+    [token],
   );
 };
 
 const updatePassword = (id, newHashedPassword) => {
   return db.query(
-    'UPDATE utilisateur SET mdp = $1, reset_token = NULL, reset_expires = NULL WHERE codeutilisateur = $2',
-    [newHashedPassword, id]
+    "UPDATE utilisateur SET mdp = $1, reset_token = NULL, reset_expires = NULL WHERE codeutilisateur = $2",
+    [newHashedPassword, id],
   );
 };
 
-<<<<<<< HEAD
-
-module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword };
-=======
 const findAll = (q = "") => {
   const query = `
     SELECT u.*, f.nomfonction 
@@ -136,32 +146,25 @@ const findAll = (q = "") => {
   return db.query(query, [`%${q}%`]);
 };
 
-// --- FONCTION CRUD ---
-
-const findAllFonctions = () => {
-  return db.query('SELECT * FROM fonction ORDER BY nomfonction ASC');
+module.exports = {
+  findByEmail,
+  findById,
+  create,
+  update,
+  remove,
+  saveResetToken,
+  findByResetToken,
+  updatePassword,
+  findAll,
 };
 
-const findFonctionById = (id) => {
-  return db.query('SELECT * FROM fonction WHERE codefonction = $1', [id]);
+module.exports = {
+  findByEmail,
+  findById,
+  create,
+  update,
+  remove,
+  saveResetToken,
+  findByResetToken,
+  updatePassword,
 };
-
-const createFonction = async (nomfonction) => {
-  const codefonction = await generateCodeFonction();
-  return db.query('INSERT INTO fonction (codefonction, nomfonction) VALUES ($1, $2) RETURNING *', [codefonction, nomfonction]);
-};
-
-const updateFonction = (id, nomfonction) => {
-  return db.query('UPDATE fonction SET nomfonction = $1 WHERE codefonction = $2 RETURNING *', [nomfonction, id]);
-};
-
-const deleteFonction = (id) => {
-  return db.query('DELETE FROM fonction WHERE codefonction = $1 RETURNING *', [id]);
-};
-
-module.exports = { 
-  findByEmail, findById, create, update, remove, saveResetToken, 
-  findByResetToken, updatePassword, findAll,
-  findAllFonctions, findFonctionById, createFonction, updateFonction, deleteFonction
-};
->>>>>>> 73904af4531c335332c27d955fb36665d9b72e56
