@@ -78,7 +78,6 @@ const create = async (user, file) => {
     ],
   );
 };
-j;
 const update = (id, user, fileUrl = null) => {
   return db.query(
     `UPDATE utilisateur SET 
