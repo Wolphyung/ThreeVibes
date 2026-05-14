@@ -1,13 +1,13 @@
-const userDatasource = require('../data/user.datasource');
+const datasource = require('../data/user.datasource');
 
-class UserRepository {
-  async findAll() {
-    return await userDatasource.getAllUsers();
-  }
+const findByEmail = async (email) => {
+  const result = await datasource.findByEmail(email);
+  return result.rows[0] || null;
+};
 
-  async findById(id) {
-    return await userDatasource.getUserById(id);
-  }
-}
+const create = async (user) => {
+  const result = await datasource.create(user);
+  return result;
+};
 
-module.exports = new UserRepository();
+module.exports = { findByEmail, create };

@@ -1,15 +1,14 @@
 const db = require('../../../core/database/db');
 
-class UserDatasource {
-  async getAllUsers() {
-    const result = await db.query('SELECT * FROM utilisateur');
-    return result.rows;
-  }
+const findByEmail = (email) =>
+  db.query('SELECT * FROM utilisateur WHERE email = $1', [email]);
 
-  async getUserById(id) {
-    const result = await db.query('SELECT * FROM utilisateur WHERE id = $1', [id]);
-    return result.rows[0];
-  }
-}
+const create = (user) =>
+  db.query(
+    `INSERT INTO utilisateur (codeutilisateur, codefonction, nom, prenoms, numcin, datecin, lieucin, adresse, role, email, mdp)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    [user.codeutilisateur, user.codefonction, user.nom, user.prenoms, user.numCIN, user.dateCIN,
+     user.lieuCIN, user.adresse, user.role, user.email, user.mdp]
+  );
 
-module.exports = new UserDatasource();
+module.exports = { findByEmail, create };
