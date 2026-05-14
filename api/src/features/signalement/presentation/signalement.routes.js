@@ -30,7 +30,7 @@ router.get('/:codeSignalement/suivi/etat', (req, res) => SignalementController.g
 
 
 // POST /api/signalements — create with files
-router.post('/', upload.array('files', 10), (req, res) => SignalementController.create(req, res));
+router.post('/', upload.array('files', 5), (req, res) => SignalementController.create(req, res));
 
 // PUT /api/signalements/:code — update
 router.put('/:code', (req, res) => SignalementController.update(req, res));
