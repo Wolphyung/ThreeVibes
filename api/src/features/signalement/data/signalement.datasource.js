@@ -60,8 +60,12 @@ class SignalementDatasource {
     };
 }
   // READ ALL
-  async getAllSignalements() {
-    const result = await db.query('SELECT * FROM SIGNALEMENT ORDER BY dateSignalement DESC');
+  async getAllSignalements(q = "") {
+    const query = `
+      SELECT * FROM SIGNALEMENT 
+      WHERE typeSignalement ILIKE $1 OR description ILIKE $1 
+      ORDER BY dateSignalement DESC`;
+    const result = await db.query(query, [`%${q}%`]);
 
     await Promise.all(result.rows.map(async (signalement) => {
       const pj = await pjService.getAttachmentsBySignalement(signalement.codesignalement);

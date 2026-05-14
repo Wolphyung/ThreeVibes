@@ -1,12 +1,12 @@
 -- -----------------------------------------------------------------------------
---             G‚n‚ration d'une base de donn‚es pour
+--             Gâ€šnâ€šration d'une base de donnâ€šes pour
 --                           PostgreSQL
 --                        (14/5/2026 14:28:08)
 -- -----------------------------------------------------------------------------
 --      Nom de la base : MLR3
 --      Projet : 
 --      Auteur : Francky
---      Date de derniŠre modification : 14/5/2026 14:27:36
+--      Date de derniÅ re modification : 14/5/2026 14:27:36
 -- -----------------------------------------------------------------------------
 
 -- -----------------------------------------------------------------------------
@@ -36,8 +36,9 @@ CREATE TABLE UTILISATEUR
     ROLE varchar(128) NULL  ,
     CODEUTILISATEUR char(5) NOT NULL  ,
     EMAIL varchar(128) NULL  ,
-    MDP varchar(128) NULL  
-,   CONSTRAINT PK_UTILISATEUR PRIMARY KEY (CODEUTILISATEUR)
+    MDP varchar(128) NULL  ,
+    IMAGE_URL text NULL  
+   ,   CONSTRAINT PK_UTILISATEUR PRIMARY KEY (CODEUTILISATEUR)
    );
 
 -- -----------------------------------------------------------------------------

@@ -24,8 +24,8 @@ class SignalementService {
     return result;
   }
 
-  async getAllSignalements() {
-    return await signalementDatasource.getAllSignalements();
+  async getAllSignalements(q) {
+    return await signalementDatasource.getAllSignalements(q);
   }
 
   /**

@@ -25,7 +25,8 @@ class SignalementController {
   // GET /api/signalements
   async getAll(req, res) {
     try {
-      const signalements = await SignalementService.getAllSignalements();
+      const { q } = req.query;
+      const signalements = await SignalementService.getAllSignalements(q || "");
       res.status(200).json({ data: signalements });
     } catch (error) {
       res.status(500).json({ error: error.message });
