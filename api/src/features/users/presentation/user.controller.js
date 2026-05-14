@@ -82,4 +82,12 @@ const getMe = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { register, login, update, remove, forgotPassword, resetPassword, getMe };
+const getAll = async (req, res, next) => {
+  try {
+    const { q } = req.query;
+    const result = await service.getAllUsers(q || "");
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
+
+module.exports = { register, login, update, remove, forgotPassword, resetPassword, getMe, getAll };

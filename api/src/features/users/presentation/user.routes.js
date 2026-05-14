@@ -1,10 +1,10 @@
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const verifyToken = require('../../../middlewares/auth.middleware');
-const { register, login, update, remove, forgotPassword, resetPassword, getMe } = require('./user.controller');
+const { register, login, update, remove, forgotPassword, resetPassword, getMe, getAll } = require('./user.controller');
 const router = require('express').Router();
 
-
+router.get('/', getAll);
 router.get('/me', verifyToken, getMe);
 router.post('/register', upload.single('image'), register);
 router.post('/login', login);

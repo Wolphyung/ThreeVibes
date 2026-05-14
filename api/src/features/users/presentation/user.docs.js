@@ -223,3 +223,21 @@
  *       400:
  *         description: Token invalide ou expiré
  */
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     tags: [Users]
+ *     summary: List all users
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Search term (name, prename or email)
+ *     responses:
+ *       200:
+ *         description: List of users
+ */

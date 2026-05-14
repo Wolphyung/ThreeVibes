@@ -63,7 +63,13 @@ const create = async (user, file) => {
   );
 };
 
-const update = (id, user, fileUrl = null) => {
+const update = async (id, user, file = null) => {
+  let fileUrl = null;
+  if (file) {
+    const fileRes = await pjService.uploadAndSave(file);
+    fileUrl = fileRes.url;
+  }
+
   return db.query(
     `UPDATE utilisateur SET 
       nom = COALESCE($1, nom), 
@@ -78,7 +84,7 @@ const update = (id, user, fileUrl = null) => {
      WHERE codeutilisateur = $10 RETURNING *`,
     [user.nom || null, user.prenoms || null, user.numCIN || null, user.dateCIN || null,
      user.lieuCIN || null, user.adresse || null, user.role || null, user.email || null, 
-     fileUrl || user.image_url || null, id]
+     fileUrl || null, id]
   );
 };
 
@@ -108,5 +114,14 @@ const updatePassword = (id, newHashedPassword) => {
   );
 };
 
+const findAll = (q = "") => {
+  const query = `
+    SELECT u.*, f.nomfonction 
+    FROM utilisateur u
+    LEFT JOIN fonction f ON u.codefonction = f.codefonction
+    WHERE u.nom ILIKE $1 OR u.prenoms ILIKE $1 OR u.email ILIKE $1
+    ORDER BY u.nom ASC`;
+  return db.query(query, [`%${q}%`]);
+};
 
-module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword };
+module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword, findAll };

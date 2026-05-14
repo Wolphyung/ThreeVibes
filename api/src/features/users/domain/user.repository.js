@@ -38,4 +38,9 @@ const updatePassword = async (id, hashedPassword) => {
   return await datasource.updatePassword(id, hashedPassword);
 };
 
-module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword };
+const findAll = async (q) => {
+  const result = await datasource.findAll(q);
+  return result.rows;
+};
+
+module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword, findAll };
