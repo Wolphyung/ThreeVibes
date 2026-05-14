@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/colors.dart';
 import '../providers/auth_provider.dart';
+import '../models/user_model.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
+
+// Importer les écrans admin
+import 'admin_home_screen.dart' as admin;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,10 +40,21 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      // Redirection selon le rôle
+      final user = authProvider.currentUser;
+      if (user?.role == UserRole.admin) {
+        // Administrateur -> Dashboard Admin
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const admin.AdminHomeScreen()),
+        );
+      } else {
+        // Citoyen ou Technicien -> Home normal
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

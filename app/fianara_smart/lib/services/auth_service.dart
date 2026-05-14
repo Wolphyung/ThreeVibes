@@ -14,13 +14,10 @@ class AuthService {
   Future<SharedPreferences> get _instance async =>
       _prefs ?? await SharedPreferences.getInstance();
 
-  // Login simulation (à remplacer par appel API)
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      // Simuler un appel API
       await Future.delayed(const Duration(seconds: 1));
 
-      // Validation simple
       if (email.isEmpty || password.isEmpty) {
         return {
           'success': false,
@@ -35,28 +32,51 @@ class AuthService {
         };
       }
 
-      // Simuler un utilisateur de test
+      // Déterminer le rôle en fonction de l'email
+      UserRole role;
+      if (email.contains('admin')) {
+        role = UserRole.admin;
+      } else if (email.contains('tech') || email.contains('technicien')) {
+        role = UserRole.technician;
+      } else {
+        role = UserRole.citizen;
+      }
+
+      // Générer un code utilisateur
+      String codeUtilisateur;
+      switch (role) {
+        case UserRole.admin:
+          codeUtilisateur = 'ADM_${DateTime.now().millisecondsSinceEpoch}';
+          break;
+        case UserRole.technician:
+          codeUtilisateur = 'TECH_${DateTime.now().millisecondsSinceEpoch}';
+          break;
+        default:
+          codeUtilisateur = 'CIT_${DateTime.now().millisecondsSinceEpoch}';
+      }
+
       final mockUser = UserModel(
-        id: 'user_001',
-        nom: 'RAKOTO',
-        prenoms: 'Jean',
+        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        nom: role == UserRole.admin
+            ? 'ADMIN'
+            : (role == UserRole.technician ? 'TECHNICIEN' : 'RAKOTO'),
+        prenoms: role == UserRole.admin
+            ? 'System'
+            : (role == UserRole.technician ? 'Jean' : 'Jean'),
         numCIN: '10123456789',
         dateCIN: DateTime(2020, 1, 1),
         lieuCIN: 'Fianarantsoa',
-        adresse: 'Ambatovolo, Fianarantsoa',
-        role: email.contains('admin')
-            ? UserRole.admin
-            : email.contains('tech')
-                ? UserRole.technician
-                : UserRole.citizen,
-        codeUtilisateur: 'CIT_001',
+        adresse: role == UserRole.admin
+            ? 'Mairie de Fianarantsoa'
+            : 'Ambatovolo, Fianarantsoa',
+        role: role,
+        codeUtilisateur: codeUtilisateur,
         email: email,
         phoneNumber: '+261341234567',
         createdAt: DateTime.now(),
       );
 
       final token = _generateToken(mockUser.id);
-
       await _saveAuthData(token, mockUser);
 
       return {
@@ -77,7 +97,6 @@ class AuthService {
     try {
       await Future.delayed(const Duration(seconds: 1));
 
-      // Validation
       if (user.email.isEmpty || password.isEmpty) {
         return {
           'success': false,
@@ -136,7 +155,6 @@ class AuthService {
   }
 
   String _generateToken(String userId) {
-    // Simulation de génération de token JWT
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${_base64Encode(userId)}.${_base64Encode(timestamp.toString())}';
   }
