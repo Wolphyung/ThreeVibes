@@ -1,25 +1,13 @@
+// lib/models/user_model.dart
 enum UserRole {
-  citizen('citoyen'),
-  technician('technicien'),
-  admin('administrateur');
-
-  final String label;
-  const UserRole(this.label);
-
-  static UserRole fromString(String role) {
-    switch (role.toLowerCase()) {
-      case 'technicien':
-        return UserRole.technician;
-      case 'administrateur':
-        return UserRole.admin;
-      default:
-        return UserRole.citizen;
-    }
-  }
+  admin,
+  technicien,
+  citoyen,
 }
 
 class UserModel {
   final String id;
+  final String codeUtilisateur;
   final String nom;
   final String prenoms;
   final String numCIN;
@@ -27,16 +15,16 @@ class UserModel {
   final String lieuCIN;
   final String adresse;
   final UserRole role;
-  final String codeUtilisateur;
   final String email;
   final String? phoneNumber;
-  final String? profileImage;
-  final bool isActive;
   final DateTime createdAt;
-  final DateTime? lastLogin;
+  final DateTime? updatedAt;
+  final bool isActive;
+  final String? token;
 
   UserModel({
     required this.id,
+    required this.codeUtilisateur,
     required this.nom,
     required this.prenoms,
     required this.numCIN,
@@ -44,85 +32,90 @@ class UserModel {
     required this.lieuCIN,
     required this.adresse,
     required this.role,
-    required this.codeUtilisateur,
     required this.email,
     this.phoneNumber,
-    this.profileImage,
-    this.isActive = true,
     required this.createdAt,
-    this.lastLogin,
+    this.updatedAt,
+    this.isActive = true,
+    this.token,
   });
 
-  String get fullName => '$prenoms $nom';
-  String get initials => '${prenoms[0]}${nom[0]}'.toUpperCase();
+  String get fullName => '$nom $prenoms';
+
+  String get initials {
+    final nomInitial = nom.isNotEmpty ? nom[0] : '';
+    final prenomInitial = prenoms.isNotEmpty ? prenoms[0] : '';
+    return '$nomInitial$prenomInitial'.toUpperCase();
+  }
+
+  String get roleString {
+    switch (role) {
+      case UserRole.admin:
+        return 'ADMIN';
+      case UserRole.technicien:
+        return 'TECHNICIEN';
+      case UserRole.citoyen:
+        return 'CITOYEN';
+    }
+  }
+
+  bool get isNew {
+    final now = DateTime.now();
+    final diff = now.difference(createdAt).inDays;
+    return diff <= 30;
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      nom: json['nom'] ?? '',
-      prenoms: json['prenoms'] ?? '',
-      numCIN: json['numCIN'] ?? '',
-      dateCIN: DateTime.tryParse(json['dateCIN'] ?? '') ?? DateTime.now(),
-      lieuCIN: json['lieuCIN'] ?? '',
-      adresse: json['adresse'] ?? '',
-      role: UserRole.fromString(json['role'] ?? 'citoyen'),
-      codeUtilisateur: json['codeUtilisateur'] ?? '',
-      email: json['email'] ?? '',
-      phoneNumber: json['phoneNumber'],
-      profileImage: json['profileImage'],
-      isActive: json['isActive'] ?? true,
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      lastLogin: json['lastLogin'] != null
-          ? DateTime.tryParse(json['lastLogin'])
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      codeUtilisateur:
+          json['codeUtilisateur']?.toString() ?? json['id']?.toString() ?? '',
+      nom: json['nom']?.toString() ?? '',
+      prenoms: json['prenoms']?.toString() ?? '',
+      numCIN: json['numCIN']?.toString() ?? '',
+      dateCIN: json['dateCIN'] != null
+          ? DateTime.tryParse(json['dateCIN'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      lieuCIN: json['lieuCIN']?.toString() ?? '',
+      adresse: json['adresse']?.toString() ?? '',
+      role: _parseRole(json['role']?.toString() ?? 'CITOYEN'),
+      email: json['email']?.toString() ?? '',
+      phoneNumber: json['phoneNumber']?.toString(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'].toString())
           : null,
+      isActive: json['isActive'] ?? true,
+      token: json['token']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'nom': nom,
       'prenoms': prenoms,
       'numCIN': numCIN,
-      'dateCIN': dateCIN.toIso8601String(),
+      'dateCIN': dateCIN.toIso8601String().split('T')[0],
       'lieuCIN': lieuCIN,
       'adresse': adresse,
-      'role': role.label,
-      'codeUtilisateur': codeUtilisateur,
+      'role': roleString,
       'email': email,
-      'phoneNumber': phoneNumber,
-      'profileImage': profileImage,
-      'isActive': isActive,
-      'createdAt': createdAt.toIso8601String(),
-      'lastLogin': lastLogin?.toIso8601String(),
+      if (phoneNumber != null) 'phoneNumber': phoneNumber,
     };
   }
 
-  UserModel copyWith({
-    String? nom,
-    String? prenoms,
-    String? adresse,
-    String? phoneNumber,
-    String? profileImage,
-    bool? isActive,
-    DateTime? lastLogin,
-  }) {
-    return UserModel(
-      id: this.id,
-      nom: nom ?? this.nom,
-      prenoms: prenoms ?? this.prenoms,
-      numCIN: this.numCIN,
-      dateCIN: this.dateCIN,
-      lieuCIN: this.lieuCIN,
-      adresse: adresse ?? this.adresse,
-      role: this.role,
-      codeUtilisateur: this.codeUtilisateur,
-      email: this.email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      profileImage: profileImage ?? this.profileImage,
-      isActive: isActive ?? this.isActive,
-      createdAt: this.createdAt,
-      lastLogin: lastLogin ?? this.lastLogin,
-    );
+  static UserRole _parseRole(String role) {
+    switch (role.toUpperCase()) {
+      case 'ADMIN':
+        return UserRole.admin;
+      case 'TECHNICIEN':
+        return UserRole.technicien;
+      case 'CITOYEN':
+        return UserRole.citoyen;
+      default:
+        return UserRole.citoyen;
+    }
   }
 }

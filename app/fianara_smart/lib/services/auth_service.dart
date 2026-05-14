@@ -1,165 +1,120 @@
+// lib/services/auth_service.dart
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import '../core/api_config.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  static const String _tokenKey = 'auth_token';
-  static const String _userKey = 'user_data';
-  static const String _isLoggedInKey = 'is_logged_in';
+  static const String baseUrl = 'https://threevibes.onrender.com/api';
 
-  final SharedPreferences? _prefs;
+  // Compte administrateur par défaut
+  static const String adminEmail = 'admin@test.com';
+  static const String adminPassword = '123456';
 
-  AuthService({SharedPreferences? prefs}) : _prefs = prefs;
-
-  Future<SharedPreferences> get _instance async =>
-      _prefs ?? await SharedPreferences.getInstance();
-
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  // Login
+  static Future<Map<String, dynamic>> login(
+      String email, String password) async {
     try {
-      await Future.delayed(const Duration(seconds: 1));
+      // Vérifier d'abord si c'est le compte admin local
+      if (email == adminEmail && password == adminPassword) {
+        // Créer un utilisateur admin local
+        final adminUser = UserModel(
+          id: 'admin_local',
+          codeUtilisateur: 'ADMIN001',
+          nom: 'Admin',
+          prenoms: 'System',
+          numCIN: 'ADMIN001',
+          dateCIN: DateTime.now(),
+          lieuCIN: 'System',
+          adresse: 'Mairie',
+          role: UserRole.admin,
+          email: adminEmail,
+          createdAt: DateTime.now(),
+          isActive: true,
+          token: 'local_admin_token',
+        );
 
-      if (email.isEmpty || password.isEmpty) {
         return {
-          'success': false,
-          'message': 'Veuillez remplir tous les champs',
+          'success': true,
+          'token': 'local_admin_token',
+          'user': adminUser,
         };
       }
 
-      if (password.length < 6) {
-        return {
-          'success': false,
-          'message': 'Mot de passe incorrect',
-        };
-      }
-
-      // Déterminer le rôle en fonction de l'email
-      UserRole role;
-      if (email.contains('admin')) {
-        role = UserRole.admin;
-      } else if (email.contains('tech') || email.contains('technicien')) {
-        role = UserRole.technician;
-      } else {
-        role = UserRole.citizen;
-      }
-
-      // Générer un code utilisateur
-      String codeUtilisateur;
-      switch (role) {
-        case UserRole.admin:
-          codeUtilisateur = 'ADM_${DateTime.now().millisecondsSinceEpoch}';
-          break;
-        case UserRole.technician:
-          codeUtilisateur = 'TECH_${DateTime.now().millisecondsSinceEpoch}';
-          break;
-        default:
-          codeUtilisateur = 'CIT_${DateTime.now().millisecondsSinceEpoch}';
-      }
-
-      final mockUser = UserModel(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        nom: role == UserRole.admin
-            ? 'ADMIN'
-            : (role == UserRole.technician ? 'TECHNICIEN' : 'RAKOTO'),
-        prenoms: role == UserRole.admin
-            ? 'System'
-            : (role == UserRole.technician ? 'Jean' : 'Jean'),
-        numCIN: '10123456789',
-        dateCIN: DateTime(2020, 1, 1),
-        lieuCIN: 'Fianarantsoa',
-        adresse: role == UserRole.admin
-            ? 'Mairie de Fianarantsoa'
-            : 'Ambatovolo, Fianarantsoa',
-        role: role,
-        codeUtilisateur: codeUtilisateur,
-        email: email,
-        phoneNumber: '+261341234567',
-        createdAt: DateTime.now(),
+      // Sinon, appel API normal
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'mdp': password,
+        }),
       );
 
-      final token = _generateToken(mockUser.id);
-      await _saveAuthData(token, mockUser);
+      print('Login Status: ${response.statusCode}');
+      print('Login Response: ${response.body}');
 
-      return {
-        'success': true,
-        'message': 'Connexion réussie',
-        'user': mockUser,
-        'token': token,
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Erreur de connexion: $e',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> register(UserModel user, String password) async {
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (user.email.isEmpty || password.isEmpty) {
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        return {
+          'success': true,
+          'token': data['token'],
+          'user': UserModel.fromJson(data['user']),
+        };
+      } else if (response.statusCode == 401) {
         return {
           'success': false,
-          'message': 'Veuillez remplir tous les champs',
+          'error': 'Email ou mot de passe incorrect',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Erreur serveur (${response.statusCode})',
         };
       }
-
-      final token = _generateToken(user.id);
-      await _saveAuthData(token, user);
-
-      return {
-        'success': true,
-        'message': 'Inscription réussie',
-        'user': user,
-        'token': token,
-      };
     } catch (e) {
       return {
         'success': false,
-        'message': 'Erreur d\'inscription: $e',
+        'error': 'Erreur de connexion: $e',
       };
     }
   }
 
-  Future<void> logout() async {
-    final prefs = await _instance;
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_userKey);
-    await prefs.setBool(_isLoggedInKey, false);
-  }
+  // Register
+  static Future<Map<String, dynamic>> register(
+      Map<String, dynamic> userData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(userData),
+      );
 
-  Future<bool> isLoggedIn() async {
-    final prefs = await _instance;
-    return prefs.getBool(_isLoggedInKey) ?? false;
-  }
+      print('Register Status: ${response.statusCode}');
+      print('Register Response: ${response.body}');
 
-  Future<UserModel?> getCurrentUser() async {
-    final prefs = await _instance;
-    final userJson = prefs.getString(_userKey);
-    if (userJson != null) {
-      return UserModel.fromJson(json.decode(userJson));
+      if (response.statusCode == 201) {
+        return {
+          'success': true,
+          'message': 'Utilisateur créé avec succès',
+        };
+      } else if (response.statusCode == 400) {
+        final data = json.decode(response.body);
+        return {
+          'success': false,
+          'error': data['message'] ?? 'Email déjà utilisé',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Erreur serveur (${response.statusCode})',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Erreur de connexion: $e',
+      };
     }
-    return null;
-  }
-
-  Future<String?> getToken() async {
-    final prefs = await _instance;
-    return prefs.getString(_tokenKey);
-  }
-
-  Future<void> _saveAuthData(String token, UserModel user) async {
-    final prefs = await _instance;
-    await prefs.setString(_tokenKey, token);
-    await prefs.setString(_userKey, json.encode(user.toJson()));
-    await prefs.setBool(_isLoggedInKey, true);
-  }
-
-  String _generateToken(String userId) {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${_base64Encode(userId)}.${_base64Encode(timestamp.toString())}';
-  }
-
-  String _base64Encode(String input) {
-    return base64.encode(utf8.encode(input)).replaceAll('=', '');
   }
 }

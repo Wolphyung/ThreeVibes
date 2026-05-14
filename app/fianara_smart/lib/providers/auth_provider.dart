@@ -1,82 +1,138 @@
+// lib/providers/auth_provider.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService = AuthService();
-
   UserModel? _currentUser;
+  String? _token;
   bool _isLoading = false;
   String? _errorMessage;
 
   UserModel? get currentUser => _currentUser;
+  String? get token => _token;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  bool get isLoggedIn => _currentUser != null;
-  bool get isAdmin => _currentUser?.role == UserRole.admin;
-  bool get isTechnician => _currentUser?.role == UserRole.technician;
+  bool get isAuthenticated => _token != null && _currentUser != null;
 
+  // Vérifier si l'utilisateur est admin
+  bool get isAdmin {
+    return _currentUser?.role == UserRole.admin;
+  }
+
+  // Vérifier si l'utilisateur est technicien
+  bool get isTechnicien {
+    return _currentUser?.role == UserRole.technicien;
+  }
+
+  // Vérifier si l'utilisateur est citoyen
+  bool get isCitoyen {
+    return _currentUser?.role == UserRole.citoyen;
+  }
+
+  AuthProvider() {
+    _loadSavedUser();
+  }
+
+  // Charger l'utilisateur sauvegardé
+  Future<void> _loadSavedUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final userJson = prefs.getString('user_data');
+
+    if (token != null && userJson != null) {
+      _token = token;
+      try {
+        final Map<String, dynamic> userMap = json.decode(userJson);
+        _currentUser = UserModel.fromJson(userMap);
+        notifyListeners();
+      } catch (e) {
+        print('Error loading user: $e');
+      }
+    }
+  }
+
+  // Connexion
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
-    final result = await _authService.login(email, password);
+    try {
+      final result = await AuthService.login(email, password);
 
-    _isLoading = false;
+      if (result['success'] == true) {
+        _token = result['token'];
+        _currentUser = result['user'];
 
-    if (result['success']) {
-      _currentUser = result['user'];
-      notifyListeners();
-      return true;
-    } else {
-      _errorMessage = result['message'];
+        // Sauvegarder les données
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', _token!);
+        await prefs.setString('user_data', json.encode(_currentUser!.toJson()));
+
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['error'];
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
-  Future<bool> register(UserModel user, String password) async {
+  // Inscription
+  Future<bool> register(Map<String, dynamic> userData) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
-    final result = await _authService.register(user, password);
+    try {
+      final result = await AuthService.register(userData);
 
-    _isLoading = false;
-
-    if (result['success']) {
-      _currentUser = result['user'];
-      notifyListeners();
-      return true;
-    } else {
-      _errorMessage = result['message'];
+      if (result['success'] == true) {
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = result['error'];
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
       notifyListeners();
       return false;
     }
   }
 
+  // Déconnexion
   Future<void> logout() async {
-    await _authService.logout();
+    _isLoading = true;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    await prefs.remove('user_data');
+
+    _token = null;
     _currentUser = null;
+    _isLoading = false;
     notifyListeners();
   }
 
+  // Vérifier le statut d'authentification (pour le splash screen)
   Future<void> checkAuthStatus() async {
-    final isLoggedIn = await _authService.isLoggedIn();
-    if (isLoggedIn) {
-      _currentUser = await _authService.getCurrentUser();
-      notifyListeners();
-    }
-  }
-
-  void updateUser(UserModel user) {
-    _currentUser = user;
-    notifyListeners();
-  }
-
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
+    await _loadSavedUser();
   }
 }

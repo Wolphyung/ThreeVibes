@@ -9,6 +9,7 @@ import 'providers/theme_provider.dart';
 // Providers admin
 import 'providers/admin_provider.dart';
 import 'providers/stats_provider.dart';
+import 'providers/admin_users_provider.dart';
 
 // Écrans principaux
 import 'screens/splash_screen.dart';
@@ -35,7 +36,6 @@ import 'models/announcement_model.dart';
 import 'models/report_model.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -55,6 +55,7 @@ class MyApp extends StatelessWidget {
         // Providers Admin
         ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => StatsProvider()),
+        ChangeNotifierProvider(create: (_) => AdminUsersProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
