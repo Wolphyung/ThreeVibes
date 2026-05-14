@@ -23,6 +23,7 @@ app.use("/api/annonces", annonceRoutes);
 // Autres routes de l'index
 app.use("/api", routes);
 
+
 // Base route
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to ThreeVibes API" });
