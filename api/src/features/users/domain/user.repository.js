@@ -1,4 +1,4 @@
-const datasource = require('../data/user.datasource');
+const datasource = require("../data/user.datasource");
 
 const findByEmail = async (email) => {
   const result = await datasource.findByEmail(email);
@@ -38,9 +38,6 @@ const updatePassword = async (id, hashedPassword) => {
   return await datasource.updatePassword(id, hashedPassword);
 };
 
-<<<<<<< HEAD
-module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword };
-=======
 const findAll = async (q) => {
   const result = await datasource.findAll(q);
   return result.rows;
@@ -73,9 +70,19 @@ const deleteFonction = async (id) => {
   return result.rows[0] || null;
 };
 
-module.exports = { 
-  findByEmail, findById, create, update, remove, saveResetToken, 
-  findByResetToken, updatePassword, findAll,
-  findAllFonctions, findFonctionById, createFonction, updateFonction, deleteFonction
+module.exports = {
+  findByEmail,
+  findById,
+  create,
+  update,
+  remove,
+  saveResetToken,
+  findByResetToken,
+  updatePassword,
+  findAll,
+  findAllFonctions,
+  findFonctionById,
+  createFonction,
+  updateFonction,
+  deleteFonction,
 };
->>>>>>> 73904af4531c335332c27d955fb36665d9b72e56

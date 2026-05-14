@@ -280,20 +280,20 @@
 /**
  * @swagger
  * /users/fonctions/{id}:
- * get:
- * tags: [Fonctions]
- * summary: Get function by ID
- * parameters:
- * - in: path
- * name: id
- * required: true
- * schema:
- * type: string
- * responses:
- * 200:
- * description: Function found
- * put:
- * tags: [Fonctions]
+ *  get:
+ *      tags: [Fonctions]
+ *      summary: Get function by ID
+ *      parameters:
+ *      - in: path
+ *      name: id
+ *      required: true
+ *      schema:
+ *      type: string
+ *      responses:
+ *      200:
+ *      description: Function found
+ *  put:
+ *      tags: [Fonctions]
  * summary: Update a function
  * parameters:
  * - in: path

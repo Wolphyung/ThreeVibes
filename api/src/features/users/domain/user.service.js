@@ -72,9 +72,7 @@ const resetPassword = async (token, newPassword) => {
   return { message: 'Mot de passe réinitialisé avec succès' };
 };
 
-<<<<<<< HEAD
 module.exports = { register, login, update, remove, getById, forgotPassword, resetPassword };
-=======
 const getAllUsers = async (q) => {
   const users = await repo.findAll(q);
   return users.map(user => {
@@ -116,4 +114,3 @@ module.exports = {
   resetPassword, getAllUsers,
   getAllFonctions, getFonctionById, createFonction, updateFonction, deleteFonction
 };
->>>>>>> 73904af4531c335332c27d955fb36665d9b72e56
