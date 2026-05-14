@@ -10,13 +10,13 @@ const findById = async (id) => {
   return result.rows[0] || null;
 };
 
-const create = async (user) => {
-  const result = await datasource.create(user);
+const create = async (user, file) => {
+  const result = await datasource.create(user, file);
   return result.rows[0];
 };
 
-const update = async (id, user) => {
-  const result = await datasource.update(id, user);
+const update = async (id, user, file) => {
+  const result = await datasource.update(id, user, file);
   return result.rows[0] || null;
 };
 
@@ -25,4 +25,17 @@ const remove = async (id) => {
   return result.rows[0] || null;
 };
 
-module.exports = { findByEmail, findById, create, update, remove };
+const saveResetToken = async (email, token, expires) => {
+  return await datasource.saveResetToken(email, token, expires);
+};
+
+const findByResetToken = async (token) => {
+  const result = await datasource.findByResetToken(token);
+  return result.rows[0] || null;
+};
+
+const updatePassword = async (id, hashedPassword) => {
+  return await datasource.updatePassword(id, hashedPassword);
+};
+
+module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword };

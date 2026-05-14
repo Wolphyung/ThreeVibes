@@ -7,6 +7,21 @@
 
 /**
  * @swagger
+ * /users/me:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get current authenticated user profile
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @swagger
  * /users/register:
  *   post:
  *     tags: [Users]
@@ -14,7 +29,7 @@
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -47,6 +62,10 @@
  *               role:
  *                 type: string
  *                 enum: [ADMIN, USER, AGENT]
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile picture (optional)
  *     responses:
  *       201:
  *         description: Utilisateur créé avec succès
@@ -104,11 +123,10 @@
  *         required: true
  *         schema:
  *           type: string
- *         description: User ID (CODEUTILISATEUR)
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -129,9 +147,13 @@
  *                 type: string
  *               email:
  *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile picture update (optional)
  *     responses:
  *       200:
- *         description: Utilisateur mis à jour
+ *         description: User updated
  *       404:
  *         description: Utilisateur introuvable
  *   delete:
@@ -173,4 +195,31 @@
  *         description: Email de récupération envoyé !
  *       404:
  *         description: Email non trouvé
+ */
+
+/**
+ * @swagger
+ * /users/reset-password:
+ *   post:
+ *     tags: [Users]
+ *     summary: Reset password using token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               token:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Mot de passe r�initialis� avec succ�s
+ *       400:
+ *         description: Token invalide ou expir�
  */
