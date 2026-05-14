@@ -13,17 +13,34 @@ class PJDatasource {
   //   return result.rows[0];
   // }
 
-  // async linkToSignalement(codeSignalement, lien) {
-  //   const query = 'INSERT INTO PJSIGNALEMENT (CODESIGNALEMENT, LIEN) VALUES ($1, $2) RETURNING *';
-  //   const result = await db.query(query, [codeSignalement, lien]);
-  //   return result.rows[0];
-  // }
+  async linkToSignalement(codeSignalement, lien) {
+    const query = 'INSERT INTO PJSIGNALEMENT (CODESIGNALEMENT, LIEN) VALUES ($1, $2) RETURNING *';
+    const result = await db.query(query, [codeSignalement, lien]);
+    return result.rows[0];
+  }
 
-  // async getAttachmentsByAnnonce(codeAnnonce) {
-  //   const query = 'SELECT * FROM PJANNONCE WHERE CODEANNONCE = $1';
-  //   const result = await db.query(query, [codeAnnonce]);
-  //   return result.rows;
-  // }
+  async getAttachmentsBySignalement(codeSignalement) {
+    const query = 'SELECT * FROM PJSIGNALEMENT WHERE CODESIGNALEMENT = $1';
+    const result = await db.query(query, [codeSignalement]);
+    return result.rows;
+  }
+
+  async getOneAttachmentsBySignalement(codeSignalement) {
+    const query = 'SELECT * FROM PJSIGNALEMENT WHERE CODESIGNALEMENT = $1';
+    const result = await db.query(query, [codeSignalement]);
+    return result.rows[0];
+  }
+
+  async deleteBySignalement(codeSignalement) {
+    const query = 'DELETE FROM PJSIGNALEMENT WHERE CODESIGNALEMENT = $1 RETURNING *';
+    const result = await db.query(query, [codeSignalement]);
+    return result.rows;
+  }
+
+  async deletePJ(lien) {
+    const query = 'DELETE FROM PIECE_JOINTE WHERE LIEN = $1';
+    await db.query(query, [lien]);
+  }
 }
 
 module.exports = new PJDatasource();

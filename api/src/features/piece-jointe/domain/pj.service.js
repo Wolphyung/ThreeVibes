@@ -1,23 +1,23 @@
 const supabase = require('../../../core/database/supabase');
 const PJDatasource = require('../data/pj.datasource');
 const { SUPABASE } = require('../../../core/config/env');
-const path = require('path');
 
 class PJService {
-  async uploadAndSave(file) {
-    if (!file) {
-      throw new Error('No file provided');
-    }
+  /**
+   * Sanitize a filename: remove accents & special characters
+   */
+  sanitizeFilename(name) {
+    return name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9.\-_]/g, "_");
+  }
 
-    const sanitizeFilename = (name) => {
-      return name
-        .normalize("NFD") // Split accented characters into base + accent
-        .replace(/[\u0300-\u036f]/g, "") // Remove the accents
-        .replace(/[^a-zA-Z0-9.\-_]/g, "_"); // Replace anything else with underscore
-    };
-
-    // Inside your upload function:
-    const cleanName = sanitizeFilename(file.originalname);
+  /**
+   * Upload a single file to Supabase and save its URL to PIECE_JOINTE
+   */
+  async uploadOne(file) {
+    const cleanName = this.sanitizeFilename(file.originalname);
     const fileName = `${Date.now()}-${cleanName}`;
 
     const { data, error } = await supabase.storage
@@ -31,18 +31,61 @@ class PJService {
       throw new Error(`Supabase upload error: ${error.message}`);
     }
 
-    // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from(SUPABASE.bucket)
       .getPublicUrl(fileName);
 
-    // Save to PIECE_JOINTE
+    // Save to PIECE_JOINTE table
     await PJDatasource.createPJ(publicUrl);
 
-    return {
-      url: publicUrl,
-      fileName: fileName,
-    };
+    return { url: publicUrl, fileName };
+  }
+
+  /**
+   * Upload a single file (backward compatible)
+   */
+  async uploadAndSave(file) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+    return await this.uploadOne(file);
+  }
+
+  /**
+   * Upload multiple files at once
+   */
+  async uploadMultiple(files) {
+    if (!files || files.length === 0) {
+      throw new Error('No files provided');
+    }
+
+    const results = [];
+    for (const file of files) {
+      const result = await this.uploadOne(file);
+      results.push(result);
+    }
+    return results;
+  }
+
+  async linkToSignalement(codeSignalement, lien) {
+    return await PJDatasource.linkToSignalement(codeSignalement, lien);
+  }
+
+  async getAttachmentsBySignalement(codeSignalement) {
+    return await PJDatasource.getAttachmentsBySignalement(codeSignalement);
+  }
+
+  async getOneAttachmentsBySignalement(codeSignalement) {
+    return await PJDatasource.getOneAttachmentsBySignalement(codeSignalement);
+  }
+
+  async deleteBySignalement(codeSignalement) {
+    const deleted = await PJDatasource.deleteBySignalement(codeSignalement);
+    // Also delete the PIECE_JOINTE records
+    for (const pj of deleted) {
+      await PJDatasource.deletePJ(pj.lien);
+    }
+    return deleted;
   }
 }
 

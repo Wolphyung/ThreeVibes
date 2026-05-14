@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('../core/config/swagger');
 const routes = require('../routes');
 
 const app = express();
@@ -9,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api', routes);
