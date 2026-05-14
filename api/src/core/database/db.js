@@ -1,21 +1,28 @@
-const { Pool } = require('pg');
-const { DB } = require('../config/env');
+const { Pool } = require("pg");
+const { DB } = require("../config/env");
 
-const pool = new Pool({
-  user: DB.user,
-  host: DB.host,
-  database: DB.database,
-  password: DB.password,
-  port: DB.port,
-});
+const poolConfig = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    }
+  : {
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+    };
+
+const pool = new Pool(poolConfig);
 
 // Test connection
-pool.on('connect', () => {
-  console.log('PostgreSQL database connected successfully');
+pool.on("connect", () => {
+  console.log("PostgreSQL database connected successfully");
 });
 
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+pool.on("error", (err) => {
+  console.error("Unexpected error on idle client", err);
   process.exit(-1);
 });
 
