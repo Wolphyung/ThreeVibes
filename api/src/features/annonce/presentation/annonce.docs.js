@@ -134,3 +134,73 @@
  *       500:
  *         description: Server error
  */
+
+/**
+ * @swagger
+ * /annonces/categories:
+ *   get:
+ *     tags: [Categories]
+ *     summary: List all categories
+ *     description: Returns all categories
+ *     responses:
+ *       200:
+ *         description: List of categories
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   codeCategorie:
+ *                     type: string
+ *                   nomcategorie:
+ *                     type: string
+ * 
+ *   post:
+ *     tags: [Categories]
+ *     summary: Create a new category
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nomcategorie:
+ *                 type: string
+ *                 description: Name of the category
+ *     responses:
+ *       201:
+ *         description: Category created successfully
+ *       500:
+ *         description: Server error
+ * 
+ * /annonces/categories/{id}:
+ *   put:
+ *     tags: [Categories]
+ *     summary: Update a category
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Category code (e.g. CA001)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nomcategorie:
+ *                 type: string
+ *                 description: Name of the category
+ *     responses:
+ *       200:
+ *         description: Category updated successfully
+ *       500:
+ *         description: Server error
+ *  
+ */

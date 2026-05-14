@@ -19,18 +19,18 @@ class AnnonceDatasource {
   async generateCodeCategorie() {
     // On cherche le code le plus élevé au lieu de compter
     const query =
-      'SELECT "codeCategorie" FROM public.categorie ORDER BY "codeCategorie" DESC LIMIT 1';
+      'SELECT codeCategorie FROM public.categorie ORDER BY codeCategorie DESC LIMIT 1';
     const result = await db.query(query);
 
     let nextNumber = 1;
     if (result.rows.length > 0) {
       // On extrait le nombre du code (ex: "AN005" -> 5) et on ajoute 1
-      const lastCode = result.rows[0].codeAnnonce;
-      const lastNumber = parseInt(lastCode.replace("AN", ""));
+      const lastCode = result.rows[0].codecategorie;
+      const lastNumber = parseInt(lastCode.replace("CA", ""));
       nextNumber = lastNumber + 1;
     }
 
-    return `AN${nextNumber.toString().padStart(3, "0")}`;
+    return `CA${nextNumber.toString().padStart(3, "0")}`;
   }
 
   create = async (data) => {
