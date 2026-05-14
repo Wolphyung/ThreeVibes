@@ -219,11 +219,9 @@
  *                 type: string
  *     responses:
  *       200:
- *         description: Mot de passe réinitialisé avec succès
+ *         description: Mot de passe rï¿½initialisï¿½ avec succï¿½s
  *       400:
- *         description: Token invalide ou expiré
-<<<<<<< HEAD
-=======
+ *         description: Token invalide ou expirï¿½
  */
 
 /**
@@ -328,5 +326,4 @@
  *     responses:
  *       200:
  *         description: Function deleted
->>>>>>> 73904af4531c335332c27d955fb36665d9b72e56
  */
