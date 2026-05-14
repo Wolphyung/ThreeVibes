@@ -32,6 +32,25 @@ class SignalementController {
     }
   }
 
+  // GET /api/signalements/nearby?lat=...&lng=...&count=...
+  async getNearby(req, res) {
+    try {
+      const { lat, lng, count } = req.query;
+      if (!lat || !lng) {
+        return res.status(400).json({ error: 'lat and lng query parameters are required' });
+      }
+      const limit = parseInt(count) || 10;
+      const result = await SignalementService.getNearbySignalements(
+        parseFloat(lat),
+        parseFloat(lng),
+        limit
+      );
+      res.status(200).json({ data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   // GET /api/signalements/:code
   async getById(req, res) {
     try {

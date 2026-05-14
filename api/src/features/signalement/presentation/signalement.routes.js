@@ -21,6 +21,9 @@ router.get('/by-fonction/:codeFonction', (req, res) => SignalementController.get
 // GET /api/signalements/suivi/:codeUtilisateur — signalements suivis by user
 router.get('/suivi/:codeUtilisateur', (req, res) => SignalementController.getSuiviByUser(req, res));
 
+// GET /api/signalements/nearby?lat=...&lng=...&count=... — nearest signalements
+router.get('/nearby', (req, res) => SignalementController.getNearby(req, res));
+
 // GET /api/signalements/:code — get one with PJs
 router.get('/:code', (req, res) => SignalementController.getById(req, res));
 

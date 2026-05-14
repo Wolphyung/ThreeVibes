@@ -1,5 +1,41 @@
 /**
  * @swagger
+ * /signalements/nearby:
+ *   get:
+ *     tags: [Signalements]
+ *     summary: Get nearest signalements from a position
+ *     description: Returns the N closest signalements sorted by distance (in meters) from the given coordinates.
+ *     parameters:
+ *       - in: query
+ *         name: lat
+ *         required: true
+ *         schema:
+ *           type: number
+ *           format: float
+ *         description: User's latitude
+ *       - in: query
+ *         name: lng
+ *         required: true
+ *         schema:
+ *           type: number
+ *           format: float
+ *         description: User's longitude
+ *       - in: query
+ *         name: count
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of results to return (default 10)
+ *     responses:
+ *       200:
+ *         description: List of nearest signalements with distance in meters
+ *       400:
+ *         description: lat and lng are required
+ */
+
+/**
+ * @swagger
  * /signalements:
  *   get:
  *     tags: [Signalements]

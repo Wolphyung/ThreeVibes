@@ -1,5 +1,6 @@
 const signalementDatasource = require('../data/signalement.datasource');
 const notificationService = require('../../notifications/notification.service');
+const { getDistance } = require('geolib');
 
 class SignalementService {
   async createSignalement(signalement, PJs, fonctions) {
@@ -25,6 +26,31 @@ class SignalementService {
 
   async getAllSignalements() {
     return await signalementDatasource.getAllSignalements();
+  }
+
+  /**
+   * Get the N nearest signalements from the user's position.
+   * @param {number} latitude - User's latitude
+   * @param {number} longitude - User's longitude
+   * @param {number} count - Number of results to return
+   */
+  async getNearbySignalements(latitude, longitude, count) {
+    const all = await signalementDatasource.getAllSignalements();
+
+    // Compute distance for each signalement
+    const withDistance = all
+      .filter(s => s.latitude != null && s.longitude != null)
+      .map(s => ({
+        ...s,
+        distance: getDistance(
+          { latitude, longitude },
+          { latitude: parseFloat(s.latitude), longitude: parseFloat(s.longitude) }
+        ),
+      }));
+
+    // Sort by distance ascending, take top N
+    withDistance.sort((a, b) => a.distance - b.distance);
+    return withDistance.slice(0, count);
   }
 
   async getSignalementById(codeSignalement) {
