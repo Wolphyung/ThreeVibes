@@ -280,50 +280,51 @@
 /**
  * @swagger
  * /users/fonctions/{id}:
- *   get:
- *     tags: [Fonctions]
- *     summary: Get function by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string`n *     responses:
- *       200:
- *         description: Function found
- *   put:
- *     tags: [Fonctions]
- *     summary: Update a function
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - nomfonction
- *             properties:
- *               nomfonction:
- *                 type: string
- *     responses:
- *       200:
- *         description: Function updated
- *   delete:
- *     tags: [Fonctions]
- *     summary: Delete a function
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Function deleted
+ * get:
+ * tags: [Fonctions]
+ * summary: Get function by ID
+ * parameters:
+ * - in: path
+ * name: id
+ * required: true
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Function found
+ * put:
+ * tags: [Fonctions]
+ * summary: Update a function
+ * parameters:
+ * - in: path
+ * name: id
+ * required: true
+ * schema:
+ * type: string
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * required:
+ * - nomfonction
+ * properties:
+ * nomfonction:
+ * type: string
+ * responses:
+ * 200:
+ * description: Function updated
+ * delete:
+ * tags: [Fonctions]
+ * summary: Delete a function
+ * parameters:
+ * - in: path
+ * name: id
+ * required: true
+ * schema:
+ * type: string
+ * responses:
+ * 200:
+ * description: Function deleted
  */
