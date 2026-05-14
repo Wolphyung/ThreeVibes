@@ -12,5 +12,10 @@ module.exports = {
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
+  },
+  SUPABASE: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
+    bucket: process.env.SUPABASE_BUCKET || 'threevibes-storage',
   }
 };
