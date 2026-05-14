@@ -1,8 +1,12 @@
 // lib/features/admin/presentation/screens/admin_reports_screen.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+// Supprimer l'import inutilisé de provider
+// import 'package:provider/provider.dart';  // À SUPPRIMER
 import '../../../../core/constants/colors.dart';
-import '../providers/stats_provider.dart';
+import '../services/signalement_service.dart';
+import '../models/signalement_model.dart';
+// Supprimer l'import inutilisé de stats_provider
+// import '../providers/stats_provider.dart';  // À SUPPRIMER
 
 class AdminReportsScreen extends StatefulWidget {
   const AdminReportsScreen({super.key});
@@ -13,12 +17,75 @@ class AdminReportsScreen extends StatefulWidget {
 
 class _AdminReportsScreenState extends State<AdminReportsScreen> {
   String _selectedFilter = 'Tous';
+  String _searchQuery = '';
+  bool _isLoading = true;
+  List<SignalementModel> _signalements = [];
+  String? _errorMessage;
+
   final List<String> _filters = ['Tous', 'EN COURS', 'TRAITÉ', 'REJETÉ'];
 
   @override
+  void initState() {
+    super.initState();
+    _loadSignalements();
+  }
+
+  Future<void> _loadSignalements() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final signalements = await SignalementService.getAllSignalements();
+      setState(() {
+        _signalements = signalements
+            .map((json) => SignalementModel.fromJson(json))
+            .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<SignalementModel> get _filteredSignalements {
+    var filtered = _signalements;
+
+    if (_selectedFilter != 'Tous') {
+      filtered = filtered.where((s) => s.status == _selectedFilter).toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered
+          .where((s) =>
+              s.type.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              s.description
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()) ||
+              s.codeUtilisateur
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    return filtered;
+  }
+
+  int get _totalCount => _signalements.length;
+  int get _enCoursCount =>
+      _signalements.where((s) => s.status == 'EN COURS').length;
+  int get _traitesCount =>
+      _signalements.where((s) => s.status == 'TRAITÉ').length;
+  int get _rejetesCount =>
+      _signalements.where((s) => s.status == 'REJETÉ').length;
+
+  @override
   Widget build(BuildContext context) {
-    final statsProvider = Provider.of<StatsProvider>(context);
-    final reports = statsProvider.recentReports;
+    final filteredSignalements = _filteredSignalements;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -32,118 +99,163 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         elevation: 1,
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadSignalements,
+          ),
+          IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              _showFilterDialog();
-            },
+            onPressed: _showFilterDialog,
           ),
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () {
-              _showSearchDialog();
-            },
+            onPressed: _showSearchDialog,
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filtres rapides
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: List.generate(_filters.length, (index) {
-                  final filter = _filters[index];
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: FilterChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                      },
-                      backgroundColor: Colors.grey[100],
-                      selectedColor: AppColors.primary.withValues(alpha: 0.1),
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline,
+                          size: 64, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(_errorMessage!),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadSignalements,
+                        child: const Text('RÉESSAYER'),
                       ),
-                      checkmarkColor: AppColors.primary,
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    if (_searchQuery.isNotEmpty)
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Résultats pour: "$_searchQuery"',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _searchQuery = '';
+                                });
+                              },
+                              child: const Text('Effacer'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: List.generate(_filters.length, (index) {
+                            final filter = _filters[index];
+                            final isSelected = _selectedFilter == filter;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: FilterChip(
+                                label: Text(filter),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedFilter = filter;
+                                  });
+                                },
+                                backgroundColor: Colors.grey[100],
+                                selectedColor:
+                                    AppColors.primary.withValues(alpha: 0.1),
+                                labelStyle: TextStyle(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.textSecondary,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                                checkmarkColor: AppColors.primary,
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
                     ),
-                  );
-                }),
-              ),
-            ),
-          ),
-
-          // Statistiques rapides
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                _buildQuickStat('Total', statsProvider.totalReports.toString(),
-                    AppColors.primary),
-                const SizedBox(width: 12),
-                _buildQuickStat('En cours', '42', AppColors.inProgress),
-                const SizedBox(width: 12),
-                _buildQuickStat('Traités', '98', AppColors.resolved),
-                const SizedBox(width: 12),
-                _buildQuickStat('Rejetés', '5', AppColors.error),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Liste des signalements
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: reports.length,
-              itemBuilder: (context, index) {
-                final report = reports[index];
-                return _buildReportCard(report);
-              },
-            ),
-          ),
-        ],
-      ),
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          _buildQuickStat('Total', _totalCount.toString(),
+                              AppColors.primary),
+                          const SizedBox(width: 8),
+                          _buildQuickStat('En cours', _enCoursCount.toString(),
+                              AppColors.inProgress),
+                          const SizedBox(width: 8),
+                          _buildQuickStat('Traités', _traitesCount.toString(),
+                              AppColors.resolved),
+                          const SizedBox(width: 8),
+                          _buildQuickStat('Rejetés', _rejetesCount.toString(),
+                              AppColors.error),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: filteredSignalements.isEmpty
+                          ? const Center(
+                              child: Text('Aucun signalement trouvé'))
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(12),
+                              itemCount: filteredSignalements.length,
+                              itemBuilder: (context, index) {
+                                final report = filteredSignalements[index];
+                                return _buildReportCard(report);
+                              },
+                            ),
+                    ),
+                  ],
+                ),
     );
   }
 
   Widget _buildQuickStat(String label, String value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           children: [
             Text(
               value,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: AppColors.textSecondary,
               ),
             ),
@@ -153,9 +265,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     );
   }
 
-  Widget _buildReportCard(dynamic report) {
+  Widget _buildReportCard(SignalementModel report) {
     final statusColor = _getStatusColor(report.status);
-    final priorityColor = _getPriorityColor(report.priority);
+    final priorityColor = _getPriorityColor(report.priorite);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -164,46 +276,47 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () {
-          _showReportDetails(report);
-        },
+        onTap: () => _showReportDetails(report),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    width: 35,
+                    height: 35,
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.report_problem,
                       color: statusColor,
+                      size: 18,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          report.title,
+                          report.type,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
-                          '${report.userName} • ${report.location}',
+                          'Code: ${report.code}',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -212,18 +325,18 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                   ),
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: priorityColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: priorityColor.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
-                      report.priority,
+                      report.priorite,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 9,
                         fontWeight: FontWeight.w600,
                         color: priorityColor,
                       ),
@@ -231,7 +344,17 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              Text(
+                report.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -239,14 +362,14 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                     children: [
                       Icon(
                         Icons.access_time,
-                        size: 14,
+                        size: 12,
                         color: AppColors.textSecondary,
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        _formatTime(report.createdAt),
+                        _formatTime(report.dateSignalement),
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 10,
                           color: AppColors.textSecondary,
                         ),
                       ),
@@ -254,15 +377,15 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                   ),
                   Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     child: Text(
                       report.status,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: statusColor,
                       ),
@@ -277,13 +400,13 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     );
   }
 
-  void _showReportDetails(dynamic report) {
+  void _showReportDetails(SignalementModel report) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
+        height: MediaQuery.of(context).size.height * 0.7,
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -309,9 +432,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            report.title,
+                            report.type,
                             style: const TextStyle(
-                              fontSize: 22,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -323,23 +446,34 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _buildDetailRow('Utilisateur', report.userName),
-                    _buildDetailRow('Lieu', report.location),
-                    _buildDetailRow('Date', _formatFullDate(report.createdAt)),
+                    _buildDetailRow('Code', report.code),
+                    _buildDetailRow('Type', report.type),
+                    _buildDetailRow('Description', report.description),
+                    _buildDetailRow(
+                        'Date', _formatFullDate(report.dateSignalement)),
                     _buildDetailRow('Statut', report.status,
                         statusColor: _getStatusColor(report.status)),
-                    _buildDetailRow('Priorité', report.priority,
-                        statusColor: _getPriorityColor(report.priority)),
+                    _buildDetailRow('Priorité', report.priorite,
+                        statusColor: _getPriorityColor(report.priorite)),
+                    _buildDetailRow('Utilisateur', report.codeUtilisateur),
+                    _buildDetailRow('Latitude', report.latitude.toString()),
+                    _buildDetailRow('Longitude', report.longitude.toString()),
                     const SizedBox(height: 20),
                     const Text(
-                      'Description',
+                      'Fonctions assignées',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Description détaillée du signalement...',
-                      style: TextStyle(color: AppColors.textSecondary),
+                    Wrap(
+                      spacing: 8,
+                      children: report.fonctions
+                          .map((f) => Chip(
+                                label: Text(f),
+                                backgroundColor:
+                                    AppColors.primary.withValues(alpha: 0.1),
+                              ))
+                          .toList(),
                     ),
                     const SizedBox(height: 24),
                     Row(
@@ -348,12 +482,13 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                           child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.pop(context);
+                              _updateReportStatus(report.code, 'TRAITÉ');
                             },
-                            icon: const Icon(Icons.check_circle),
+                            icon: const Icon(Icons.check_circle, size: 18),
                             label: const Text('MARQUER TRAITÉ'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.resolved,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
                             ),
                           ),
                         ),
@@ -369,6 +504,40 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     );
   }
 
+  Future<void> _updateReportStatus(String code, String newStatus) async {
+    // Créer une copie modifiable du signalement
+    final index = _signalements.indexWhere((s) => s.code == code);
+    if (index != -1) {
+      final oldReport = _signalements[index];
+      // Créer un nouveau signalement avec le statut modifié
+      final updatedReport = SignalementModel(
+        code: oldReport.code,
+        type: oldReport.type,
+        description: oldReport.description,
+        dateSignalement: oldReport.dateSignalement,
+        latitude: oldReport.latitude,
+        longitude: oldReport.longitude,
+        codeUtilisateur: oldReport.codeUtilisateur,
+        fonctions: oldReport.fonctions,
+        status: newStatus,
+        priorite: oldReport.priorite,
+      );
+
+      setState(() {
+        _signalements[index] = updatedReport;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Signalement marqué comme $newStatus'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  }
+
   Widget _buildDetailRow(String label, String value, {Color? statusColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -376,11 +545,11 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 90,
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textSecondary,
               ),
@@ -390,15 +559,15 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
             child: statusColor != null
                 ? Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       value,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         color: statusColor,
                         fontWeight: FontWeight.w500,
                       ),
@@ -406,7 +575,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                   )
                 : Text(
                     value,
-                    style: const TextStyle(fontSize: 14),
+                    style: const TextStyle(fontSize: 13),
                   ),
           ),
         ],
@@ -432,11 +601,6 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
               leading: const Icon(Icons.priority_high),
               onTap: () => Navigator.pop(context),
             ),
-            ListTile(
-              title: const Text('Par utilisateur'),
-              leading: const Icon(Icons.person),
-              onTap: () => Navigator.pop(context),
-            ),
           ],
         ),
         actions: [
@@ -450,18 +614,25 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   }
 
   void _showSearchDialog() {
+    final controller = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Rechercher'),
         content: TextField(
+          controller: controller,
+          autofocus: true,
           decoration: InputDecoration(
-            hintText: 'Titre, lieu, utilisateur...',
+            hintText: 'Type, description, code...',
             prefixIcon: const Icon(Icons.search),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
             ),
           ),
+          onSubmitted: (value) {
+            setState(() => _searchQuery = value);
+            Navigator.pop(context);
+          },
         ),
         actions: [
           TextButton(
@@ -469,7 +640,10 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              setState(() => _searchQuery = controller.text);
+              Navigator.pop(context);
+            },
             child: const Text('Rechercher'),
           ),
         ],
@@ -491,7 +665,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   }
 
   Color _getPriorityColor(String priority) {
-    switch (priority) {
+    switch (priority.toUpperCase()) {
       case 'URGENT':
         return AppColors.error;
       case 'ÉLEVÉ':

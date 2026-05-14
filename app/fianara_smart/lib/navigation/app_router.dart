@@ -1,5 +1,7 @@
 // lib/navigation/app_router.dart
-import 'package:flutter/material.dart';
+// Supprimez la ligne 2
+// import 'package:flutter/material.dart';  // À SUPPRIMER
+
 import 'package:go_router/go_router.dart';
 import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
@@ -7,16 +9,21 @@ import '../screens/register_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/map_screen.dart';
 import '../screens/announcements_screen.dart';
+import '../screens/announcement_detail_screen.dart';
 import '../screens/reports_screen.dart';
 import '../screens/report_form_screen.dart';
+import '../screens/report_detail_screen.dart';
 import '../screens/profile_screen.dart';
 
-// Importer avec des prefixes pour éviter les conflits
-import '../screens/admin_home_screen.dart' as admin_home;
+// Imports admin
+import '../screens/admin_home_screen.dart' as admin;
 import '../screens/admin_reports_screen.dart';
 import '../screens/admin_users_screen.dart';
 import '../screens/admin_announcements_screen.dart';
 import '../screens/admin_profile_screen.dart';
+
+import '../models/announcement_model.dart';
+import '../models/report_model.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -70,11 +77,11 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const ProfileScreen(),
     ),
 
-    // Routes administrateur
+    // Routes admin
     GoRoute(
       path: '/admin',
       name: 'admin',
-      builder: (context, state) => const admin_home.AdminHomeScreen(),
+      builder: (context, state) => const admin.AdminHomeScreen(),
     ),
     GoRoute(
       path: '/admin/reports',
@@ -95,6 +102,24 @@ final GoRouter appRouter = GoRouter(
       path: '/admin/profile',
       name: 'admin-profile',
       builder: (context, state) => const AdminProfileScreen(),
+    ),
+
+    // Routes avec paramètres
+    GoRoute(
+      path: '/announcement-detail',
+      name: 'announcement-detail',
+      builder: (context, state) {
+        final announcement = state.extra as AnnouncementModel;
+        return AnnouncementDetailScreen(announcement: announcement);
+      },
+    ),
+    GoRoute(
+      path: '/report-detail',
+      name: 'report-detail',
+      builder: (context, state) {
+        final report = state.extra as ReportModel;
+        return ReportDetailScreen(report: report);
+      },
     ),
   ],
 );

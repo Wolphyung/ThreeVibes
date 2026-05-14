@@ -5,6 +5,7 @@ import '../constants/colors.dart';
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
+import 'admin_home_screen.dart' as admin;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -49,16 +50,30 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.checkAuthStatus();
 
-    if (authProvider.isLoggedIn) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+    // Utiliser isAuthenticated au lieu de checkAuthStatus() et isLoggedIn
+    final isAuthenticated = authProvider.isAuthenticated;
+    final isAdminUser = authProvider.isAdmin;
+
+    if (mounted) {
+      if (isAuthenticated) {
+        if (isAdminUser) {
+          // Rediriger vers dashboard admin
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const admin.AdminHomeScreen()),
+          );
+        } else {
+          // Rediriger vers home utilisateur
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      } else {
+        // Rediriger vers login
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
     }
   }
 
@@ -94,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
                           borderRadius: BorderRadius.circular(60),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -132,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen>
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(

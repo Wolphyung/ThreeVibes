@@ -1,269 +1,93 @@
-// lib/core/providers/admin_provider.dart
+// lib/providers/admin_provider.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import '../models/user_model.dart';
 
 class AdminProvider extends ChangeNotifier {
-  // État de l'admin
+  List<UserModel> _users = [];
   bool _isLoading = false;
   String? _errorMessage;
 
-  // Données admin
-  AdminProfile? _adminProfile;
-  List<AdminActivity> _recentActivities = [];
-  List<AdminNotification> _notifications = [];
-  List<AdminPermission> _permissions = [];
-
-  // Statistiques admin
-  AdminStats? _adminStats;
-
-  // Getters
+  List<UserModel> get users => _users;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  AdminProfile? get adminProfile => _adminProfile;
-  List<AdminActivity> get recentActivities => _recentActivities;
-  List<AdminNotification> get notifications => _notifications;
-  List<AdminPermission> get permissions => _permissions;
-  AdminStats? get adminStats => _adminStats;
-  int get unreadNotificationsCount =>
-      _notifications.where((n) => !n.isRead).length;
+
+  int get totalUsers => _users.length;
+  int get activeUsers => _users.where((u) => u.isActive).length;
+  int get inactiveUsers => _users.where((u) => !u.isActive).length;
 
   AdminProvider() {
-    loadAdminData();
+    loadMockUsers();
   }
 
-  // Charger toutes les données admin
-  Future<void> loadAdminData() async {
-    _setLoading(true);
-    _errorMessage = null;
-
-    try {
-      // Simuler un appel API
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      _adminProfile = _getMockAdminProfile();
-      _recentActivities = _getMockActivities();
-      _notifications = _getMockNotifications();
-      _permissions = _getMockPermissions();
-      _adminStats = _getMockAdminStats();
-
-      _setLoading(false);
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString();
-      _setLoading(false);
-    }
-  }
-
-  // Mettre à jour le profil admin
-  Future<bool> updateAdminProfile({
-    String? name,
-    String? email,
-    String? phone,
-    String? department,
-    String? bio,
-  }) async {
-    _setLoading(true);
-
-    try {
-      // Simuler un appel API
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (_adminProfile != null) {
-        _adminProfile = _adminProfile!.copyWith(
-          name: name,
-          email: email,
-          phone: phone,
-          department: department,
-          bio: bio,
-        );
-      }
-
-      _setLoading(false);
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  // Changer le mot de passe
-  Future<bool> changePassword({
-    required String currentPassword,
-    required String newPassword,
-    required String confirmPassword,
-  }) async {
-    _setLoading(true);
-
-    try {
-      // Simuler un appel API
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (newPassword != confirmPassword) {
-        _errorMessage = "Les mots de passe ne correspondent pas";
-        _setLoading(false);
-        return false;
-      }
-
-      if (currentPassword != "admin123") {
-        // Mock validation
-        _errorMessage = "Mot de passe actuel incorrect";
-        _setLoading(false);
-        return false;
-      }
-
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  // Marquer une notification comme lue
-  void markNotificationAsRead(String notificationId) {
-    final index = _notifications.indexWhere((n) => n.id == notificationId);
-    if (index != -1) {
-      _notifications[index].isRead = true;
-      notifyListeners();
-    }
-  }
-
-  // Marquer toutes les notifications comme lues
-  void markAllNotificationsAsRead() {
-    for (var notification in _notifications) {
-      notification.isRead = true;
-    }
+  void loadMockUsers() {
+    _users = [
+      UserModel(
+        id: '1',
+        codeUtilisateur: 'U001',
+        nom: 'Dupont',
+        prenoms: 'Jean',
+        numCIN: '123456789',
+        dateCIN: DateTime.now(),
+        lieuCIN: 'Antananarivo',
+        adresse: '123 Rue Principale',
+        role: UserRole.citoyen,
+        email: 'jean@example.com',
+        phoneNumber: '0341234567',
+        createdAt: DateTime.now(),
+        isActive: true,
+      ),
+      UserModel(
+        id: '2',
+        codeUtilisateur: 'U002',
+        nom: 'Martin',
+        prenoms: 'Marie',
+        numCIN: '987654321',
+        dateCIN: DateTime.now(),
+        lieuCIN: 'Antananarivo',
+        adresse: '456 Avenue Centrale',
+        role: UserRole.technicien,
+        email: 'marie@example.com',
+        phoneNumber: '0347654321',
+        createdAt: DateTime.now(),
+        isActive: true,
+      ),
+      UserModel(
+        id: '3',
+        codeUtilisateur: 'U003',
+        nom: 'Admin',
+        prenoms: 'System',
+        numCIN: 'ADMIN001',
+        dateCIN: DateTime.now(),
+        lieuCIN: 'Antananarivo',
+        adresse: 'Mairie',
+        role: UserRole.admin,
+        email: 'admin@example.com',
+        phoneNumber: '0340000000',
+        createdAt: DateTime.now(),
+        isActive: true,
+      ),
+    ];
     notifyListeners();
   }
 
-  // Supprimer une notification
-  void deleteNotification(String notificationId) {
-    _notifications.removeWhere((n) => n.id == notificationId);
+  Future<void> fetchUsers() async {
+    _isLoading = true;
     notifyListeners();
-  }
 
-  // Ajouter une activité récente
-  void addActivity(AdminActivity activity) {
-    _recentActivities.insert(0, activity);
-    if (_recentActivities.length > 20) {
-      _recentActivities.removeLast();
-    }
-    notifyListeners();
-  }
-
-  // Vérifier si l'admin a une permission
-  bool hasPermission(String permissionName) {
-    return _permissions.any((p) => p.name == permissionName && p.isGranted);
-  }
-
-  // Mettre à jour les statistiques
-  Future<void> refreshStats() async {
-    _setLoading(true);
     await Future.delayed(const Duration(seconds: 1));
-    _adminStats = _getMockAdminStats();
-    _setLoading(false);
+    loadMockUsers();
+
+    _isLoading = false;
     notifyListeners();
   }
 
-  // Actions admin (modération, gestion, etc.)
-  Future<bool> moderateReport(
-      String reportId, String action, String? reason) async {
-    _setLoading(true);
-
-    try {
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      // Logique de modération
-      addActivity(AdminActivity(
-        id: DateTime.now().toString(),
-        action: "Modération du signalement #$reportId",
-        details: "Action: $action${reason != null ? ', Raison: $reason' : ''}",
-        timestamp: DateTime.now(),
-        type: ActivityType.moderation,
-      ));
-
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  Future<bool> manageUser(String userId, String action) async {
-    _setLoading(true);
-
-    try {
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      addActivity(AdminActivity(
-        id: DateTime.now().toString(),
-        action: "Gestion utilisateur #$userId",
-        details: "Action: $action",
-        timestamp: DateTime.now(),
-        type: ActivityType.userManagement,
-      ));
-
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  Future<bool> publishAnnouncement(
-      String title, String content, String priority) async {
-    _setLoading(true);
-
-    try {
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      addActivity(AdminActivity(
-        id: DateTime.now().toString(),
-        action: "Publication d'annonce",
-        details: "Titre: $title, Priorité: $priority",
-        timestamp: DateTime.now(),
-        type: ActivityType.announcement,
-      ));
-
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  // Méthodes privées
-  void _setLoading(bool loading) {
-    _isLoading = loading;
+  Future<bool> updateUserStatus(String userId, bool isActive) async {
+    _isLoading = true;
     notifyListeners();
-  }
 
-  // Données mock
-  AdminProfile _getMockAdminProfile() {
-    return AdminProfile(
-      id: 'admin_001',
-      name: 'Admin Système',
-      email: 'admin@fianara.com',
-      phone: '+216 12 345 678',
-      department: 'Sécurité Publique',
-      role: 'Super Administrateur',
-      bio: 'Administrateur principal du système de signalement citoyen',
-      avatarUrl: null,
-      joinedAt: DateTime(2024, 1, 15),
-      lastLogin: DateTime.now(),
-      isActive: true,
-    );
-  }
+    await Future.delayed(const Duration(milliseconds: 500));
 
+<<<<<<< HEAD
   List<AdminActivity> _getMockActivities() {
     return [
       AdminActivity(
@@ -477,127 +301,91 @@ class AdminActivity {
         return '📊';
       default:
         return '📌';
+=======
+    final index = _users.indexWhere((u) => u.id == userId);
+    if (index != -1) {
+      final oldUser = _users[index];
+      _users[index] = UserModel(
+        id: oldUser.id,
+        codeUtilisateur: oldUser.codeUtilisateur,
+        nom: oldUser.nom,
+        prenoms: oldUser.prenoms,
+        numCIN: oldUser.numCIN,
+        dateCIN: oldUser.dateCIN,
+        lieuCIN: oldUser.lieuCIN,
+        adresse: oldUser.adresse,
+        role: oldUser.role,
+        email: oldUser.email,
+        phoneNumber: oldUser.phoneNumber,
+        createdAt: oldUser.createdAt,
+        isActive: isActive,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+>>>>>>> ab5b510b0e5d51fbce79c225479cea42f1147e5b
     }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
   }
 
-  Color get color {
-    switch (type) {
-      case ActivityType.login:
-        return Colors.blue;
-      case ActivityType.moderation:
-        return Colors.orange;
-      case ActivityType.announcement:
-        return Colors.green;
-      case ActivityType.userManagement:
-        return Colors.purple;
-      case ActivityType.export:
-        return Colors.teal;
-      default:
-        return Colors.grey;
-    }
-  }
-}
-
-class AdminNotification {
-  final String id;
-  final String title;
-  final String message;
-  final DateTime timestamp;
-  bool isRead;
-  final NotificationType type;
-  final String? actionId;
-
-  AdminNotification({
-    required this.id,
-    required this.title,
-    required this.message,
-    required this.timestamp,
-    required this.isRead,
-    required this.type,
-    this.actionId,
-  });
-
-  Color get color {
-    switch (type) {
-      case NotificationType.urgent:
+  // Méthode pour obtenir la couleur du rôle (sans switch avec default inutile)
+  Color getRoleColor(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
         return Colors.red;
-      case NotificationType.warning:
+      case UserRole.technicien:
         return Colors.orange;
-      case NotificationType.success:
-        return Colors.green;
-      case NotificationType.info:
+      case UserRole.citoyen:
         return Colors.blue;
-      default:
-        return Colors.grey;
     }
   }
 
-  IconData get icon {
-    switch (type) {
-      case NotificationType.urgent:
-        return Icons.warning;
-      case NotificationType.warning:
-        return Icons.info;
-      case NotificationType.success:
-        return Icons.check_circle;
-      case NotificationType.info:
-        return Icons.notifications;
-      default:
-        return Icons.notifications_none;
+  // Méthode pour obtenir le texte du rôle
+  String getRoleString(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return 'Administrateur';
+      case UserRole.technicien:
+        return 'Technicien';
+      case UserRole.citoyen:
+        return 'Citoyen';
     }
   }
+
+  // Méthode pour obtenir la couleur du statut
+  Color getStatusColor(bool isActive) {
+    return isActive ? Colors.green : Colors.grey;
+  }
+
+  // Méthode pour obtenir le texte du statut
+  String getStatusString(bool isActive) {
+    return isActive ? 'Actif' : 'Inactif';
+  }
+
+  // Supprimez les méthodes suivantes si elles existent avec des switch problématiques :
+  // - statusColor (remplacé par getStatusColor)
+  // - statusIcon (si vous l'utilisez)
+  // - priorityColor (si vous l'utilisez)
 }
 
-class AdminPermission {
-  final String name;
-  bool isGranted;
-  final String description;
-
-  AdminPermission({
-    required this.name,
-    required this.isGranted,
-    required this.description,
-  });
-}
-
+// Si vous avez une classe AdminStats, assurez-vous qu'elle est correcte
 class AdminStats {
-  final int actionsToday;
-  final int actionsThisWeek;
-  final int reportsModerated;
-  final int usersManaged;
-  final int announcementsPublished;
-  final double avgResponseTime;
-  final int satisfactionRate;
+  final int totalUsers;
+  final int activeUsers;
+  final int totalReports;
+  final int pendingReports;
+  final int resolvedReports;
+  final double resolutionRate;
 
   AdminStats({
-    required this.actionsToday,
-    required this.actionsThisWeek,
-    required this.reportsModerated,
-    required this.usersManaged,
-    required this.announcementsPublished,
-    required this.avgResponseTime,
-    required this.satisfactionRate,
+    required this.totalUsers,
+    required this.activeUsers,
+    required this.totalReports,
+    required this.pendingReports,
+    required this.resolvedReports,
+    required this.resolutionRate,
   });
-}
-
-enum ActivityType {
-  login,
-  moderation,
-  announcement,
-  userManagement,
-  export,
-}
-
-enum NotificationType {
-  urgent,
-  warning,
-  success,
-  info,
-}
-
-// Extension pour faciliter l'utilisation
-extension AdminProviderExtension on BuildContext {
-  AdminProvider get adminProvider => Provider.of<AdminProvider>(this);
-  AdminProvider get adminProviderListen =>
-      Provider.of<AdminProvider>(this, listen: true);
 }

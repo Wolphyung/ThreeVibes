@@ -64,51 +64,55 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Photo de profil
+            // Photo de profil (sans option d'édition)
             Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.admin_panel_settings,
-                        size: 60,
-                        color: Colors.white,
-                      ),
-                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.admin_panel_settings,
+                    size: 60,
+                    color: Colors.white,
                   ),
-                  if (_isEditing)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Nom de l'admin
+            Text(
+              _adminInfo['name']!,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                _adminInfo['role']!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -221,6 +225,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   backgroundColor: AppColors.warning,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -233,6 +240,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   foregroundColor: AppColors.error,
+                  side: BorderSide(color: AppColors.error),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ],
@@ -316,6 +327,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     }
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 20, color: AppColors.textSecondary),
         const SizedBox(width: 12),
@@ -350,11 +362,18 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       _adminInfo.addAll(_editedInfo);
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profil mis à jour avec succès')),
+      const SnackBar(
+        content: Text('Profil mis à jour avec succès'),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 
   void _showChangePasswordDialog() {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -363,26 +382,32 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
+              controller: currentPasswordController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Mot de passe actuel',
                 prefixIcon: Icon(Icons.lock),
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
+              controller: newPasswordController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Nouveau mot de passe',
                 prefixIcon: Icon(Icons.lock_outline),
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
+              controller: confirmPasswordController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Confirmer le mot de passe',
                 prefixIcon: Icon(Icons.lock_outline),
+                border: OutlineInputBorder(),
               ),
             ),
           ],
@@ -394,11 +419,41 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           ),
           ElevatedButton(
             onPressed: () {
+              // Vérification des mots de passe
+              if (newPasswordController.text !=
+                  confirmPasswordController.text) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Les mots de passe ne correspondent pas'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              if (newPasswordController.text.length < 6) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        'Le mot de passe doit contenir au moins 6 caractères'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                    content: Text('Mot de passe modifié avec succès')),
+                  content: Text('Mot de passe modifié avec succès'),
+                  backgroundColor: Colors.green,
+                ),
               );
+
+              // Vider les controllers
+              currentPasswordController.clear();
+              newPasswordController.clear();
+              confirmPasswordController.clear();
             },
             child: const Text('MODIFIER'),
           ),
@@ -414,6 +469,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Déconnexion'),
         content: const Text('Voulez-vous vraiment vous déconnecter ?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -421,9 +479,23 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // Afficher un indicateur de chargement
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+
               await authProvider.logout();
+
               if (context.mounted) {
+                // Fermer le dialogue de chargement
                 Navigator.pop(context);
+                // Fermer le dialogue de confirmation
+                Navigator.pop(context);
+                // Rediriger vers login
                 Navigator.pushReplacementNamed(context, '/login');
               }
             },
