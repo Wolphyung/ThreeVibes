@@ -1,6 +1,6 @@
-const supabase = require('../../../core/database/supabase');
-const PJDatasource = require('../data/pj.datasource');
-const { SUPABASE } = require('../../../core/config/env');
+const supabase = require("../../../core/database/supabase");
+const PJDatasource = require("../data/pj.datasource");
+const { SUPABASE } = require("../../../core/config/env");
 
 class PJService {
   /**
@@ -24,16 +24,16 @@ class PJService {
       .from(SUPABASE.bucket)
       .upload(fileName, file.buffer, {
         contentType: file.mimetype,
-        upsert: false
+        upsert: false,
       });
 
     if (error) {
       throw new Error(`Supabase upload error: ${error.message}`);
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(SUPABASE.bucket)
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(SUPABASE.bucket).getPublicUrl(fileName);
 
     // Save to PIECE_JOINTE table
     await PJDatasource.createPJ(publicUrl);
@@ -46,7 +46,7 @@ class PJService {
    */
   async uploadAndSave(file) {
     if (!file) {
-      throw new Error('No file provided');
+      throw new Error("No file provided");
     }
     return await this.uploadOne(file);
   }
@@ -56,7 +56,7 @@ class PJService {
    */
   async uploadMultiple(files) {
     if (!files || files.length === 0) {
-      throw new Error('No files provided');
+      throw new Error("No files provided");
     }
 
     const results = [];
@@ -86,6 +86,27 @@ class PJService {
       await PJDatasource.deletePJ(pj.lien);
     }
     return deleted;
+  }
+
+  async deleteByUrls(urls) {
+    if (!urls || urls.length === 0) return;
+
+    // 1. Extraire les noms de fichiers à partir des URLs
+    const filePaths = urls.map((url) => url.split("/").pop());
+
+    // 2. Supprimer du stockage Supabase
+    const { error } = await supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .remove(filePaths);
+
+    if (error) {
+      console.error("Erreur Supabase Storage:", error);
+      throw new Error("Impossible de supprimer les fichiers physiques");
+    }
+
+    // 3. Supprimer de la table PIECE_JOINTE (SQL)
+    // La cascade s'occupera de la table de liaison PJANNONCE
+    await PJDatasource.deleteByUrls(urls);
   }
 }
 
