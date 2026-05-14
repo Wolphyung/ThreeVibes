@@ -70,6 +70,23 @@ class PJService {
   async linkToSignalement(codeSignalement, lien) {
     return await PJDatasource.linkToSignalement(codeSignalement, lien);
   }
+
+  async getAttachmentsBySignalement(codeSignalement) {
+    return await PJDatasource.getAttachmentsBySignalement(codeSignalement);
+  }
+
+  async getOneAttachmentsBySignalement(codeSignalement) {
+    return await PJDatasource.getOneAttachmentsBySignalement(codeSignalement);
+  }
+
+  async deleteBySignalement(codeSignalement) {
+    const deleted = await PJDatasource.deleteBySignalement(codeSignalement);
+    // Also delete the PIECE_JOINTE records
+    for (const pj of deleted) {
+      await PJDatasource.deletePJ(pj.lien);
+    }
+    return deleted;
+  }
 }
 
 module.exports = new PJService();
