@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Permissions pour la localisation -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- Pour l'accès internet (carte) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    
     <application
         android:label="fianara_smart"
         android:name="${applicationName}"
@@ -19,6 +26,8 @@
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
+              android:name="com.google.android.geo.API_KEY"
+              android:value="AIzaSyC0GJTRDgS5E-Ub_TrDRnaVhCRKc58ZgmQ"
               />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
