@@ -6,7 +6,6 @@ router.post('/login', login);
 router.put('/:id', update);
 router.delete('/:id', remove);
 
-
 router.post('/forgot-password', forgotPassword);
 
 module.exports = router;
