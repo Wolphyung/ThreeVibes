@@ -1,15 +1,28 @@
 const datasource = require('../data/instructionDossier.datasource');
 
+const findAll = async () => {
+  const result = await datasource.findAll();
+  return result.rows;
+};
+
 const findById = async (id) => {
   const result = await datasource.findById(id);
   return result.rows[0] || null;
 };
 
+const create = async (dossier) => {
+  const result = await datasource.create(dossier);
+  return result.rows[0];
+};
 
-//créer une instruction dossier
-const create = async (instruction) => {
-  const result = await datasource.create(instruction);
+const update = async (id, dossier) => {
+  const result = await datasource.update(id, dossier);
   return result.rows[0] || null;
 };
 
-module.exports = { findById, create };
+const remove = async (id) => {
+  const result = await datasource.remove(id);
+  return result.rows[0] || null;
+};
+
+module.exports = { findAll, findById, create, update, remove };
