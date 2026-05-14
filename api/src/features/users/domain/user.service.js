@@ -2,8 +2,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const repo = require('./user.repository');
 
-
-//logique métier pour les utilisateurs
 const register = async (userData) => {
   const existing = await repo.findByEmail(userData.email);
   if (existing) throw new Error('Email déjà utilisé');

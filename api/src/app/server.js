@@ -4,6 +4,7 @@ const { PORT } = require("../core/config/env");
 const db = require("../core/database/db");
 const { initSocket } = require("../core/socket");
 const weatherService = require("../features/weather/domain/weather.service");
+require('dotenv').config({ path: require('path').resolve(__dirname, '..', '..', '.env') });
 
 async function startServer() {
   try {
