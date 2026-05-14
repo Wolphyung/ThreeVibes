@@ -157,8 +157,12 @@ class SignalementDatasource {
 
   // Assign a utilisateur to a signalement
   async followSignalement(codeSignalement, codeUtilisateur, stateSuivi) {
-    const query = 'INSERT INTO SUIVRE (CODESIGNALEMENT, CODEUTILISATEUR, ETATSUIVI, DATESUIVI) VALUES ($1, $2, $3, $4) RETURNING *';
-    const result = await db.query(query, [codeSignalement, codeUtilisateur, stateSuivi || "En traitement", new Date()]);
+    const lastCodeResult = await db.query('SELECT codesuivi FROM SUIVRE ORDER BY codesuivi DESC LIMIT 1');
+    const lastCode = lastCodeResult.rows[0]?.codesuivi;
+    const newCode = this.generateNextCode(lastCode);
+
+    const query = 'INSERT INTO SUIVRE (CODESUIVI, CODESIGNALEMENT, CODEUTILISATEUR, ETATSUIVI, DATESUIVI) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+    const result = await db.query(query, [newCode, codeSignalement, codeUtilisateur, stateSuivi || "En traitement", new Date()]);
     return result.rows[0];
   }
   
