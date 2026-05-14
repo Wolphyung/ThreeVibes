@@ -80,4 +80,36 @@ const getAllUsers = async (q) => {
   });
 };
 
-module.exports = { register, login, update, remove, getById, forgotPassword, resetPassword, getAllUsers };
+// --- FONCTION CRUD ---
+
+const getAllFonctions = async () => {
+  return await repo.findAllFonctions();
+};
+
+const getFonctionById = async (id) => {
+  const fonction = await repo.findFonctionById(id);
+  if (!fonction) throw new Error('Fonction introuvable');
+  return fonction;
+};
+
+const createFonction = async (nomfonction) => {
+  return await repo.createFonction(nomfonction);
+};
+
+const updateFonction = async (id, nomfonction) => {
+  const existing = await repo.findFonctionById(id);
+  if (!existing) throw new Error('Fonction introuvable');
+  return await repo.updateFonction(id, nomfonction);
+};
+
+const deleteFonction = async (id) => {
+  const existing = await repo.findFonctionById(id);
+  if (!existing) throw new Error('Fonction introuvable');
+  return await repo.deleteFonction(id);
+};
+
+module.exports = { 
+  register, login, update, remove, getById, forgotPassword, 
+  resetPassword, getAllUsers,
+  getAllFonctions, getFonctionById, createFonction, updateFonction, deleteFonction
+};

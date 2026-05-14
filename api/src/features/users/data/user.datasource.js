@@ -124,4 +124,31 @@ const findAll = (q = "") => {
   return db.query(query, [`%${q}%`]);
 };
 
-module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword, findAll };
+// --- FONCTION CRUD ---
+
+const findAllFonctions = () => {
+  return db.query('SELECT * FROM fonction ORDER BY nomfonction ASC');
+};
+
+const findFonctionById = (id) => {
+  return db.query('SELECT * FROM fonction WHERE codefonction = $1', [id]);
+};
+
+const createFonction = async (nomfonction) => {
+  const codefonction = await generateCodeFonction();
+  return db.query('INSERT INTO fonction (codefonction, nomfonction) VALUES ($1, $2) RETURNING *', [codefonction, nomfonction]);
+};
+
+const updateFonction = (id, nomfonction) => {
+  return db.query('UPDATE fonction SET nomfonction = $1 WHERE codefonction = $2 RETURNING *', [nomfonction, id]);
+};
+
+const deleteFonction = (id) => {
+  return db.query('DELETE FROM fonction WHERE codefonction = $1 RETURNING *', [id]);
+};
+
+module.exports = { 
+  findByEmail, findById, create, update, remove, saveResetToken, 
+  findByResetToken, updatePassword, findAll,
+  findAllFonctions, findFonctionById, createFonction, updateFonction, deleteFonction
+};
