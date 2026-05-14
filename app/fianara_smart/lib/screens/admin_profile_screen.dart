@@ -1,6 +1,7 @@
-// lib/features/admin/presentation/screens/admin_profile_screen.dart
 import 'package:flutter/material.dart';
-import '../../../../core/constants/colors.dart';
+import '../../../../constants/colors.dart';
+import '../../../../providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({super.key});
@@ -16,9 +17,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     'name': 'Admin Système',
     'email': 'admin@fianara.com',
     'role': 'Super Administrateur',
-    'phone': '+216 12 345 678',
+    'phone': '+261 34 12 345 67',
     'department': 'Sécurité Publique',
     'joined': 'Janvier 2024',
+    'bio': 'Administrateur principal du système de signalement citoyen',
   };
 
   final Map<String, String> _editedInfo = {};
@@ -31,11 +33,14 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.currentUser;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          'Mon Profil',
+          'Mon Profil Admin',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -186,6 +191,14 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   ),
                   const Divider(),
                   _buildEditableField(
+                    label: 'Bio',
+                    value: _adminInfo['bio']!,
+                    icon: Icons.description,
+                    onChanged: (value) => _editedInfo['bio'] = value,
+                    maxLines: 3,
+                  ),
+                  const Divider(),
+                  _buildEditableField(
                     label: 'Date d\'inscription',
                     value: _adminInfo['joined']!,
                     icon: Icons.calendar_today,
@@ -213,7 +226,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () {
-                  _showLogoutConfirmation();
+                  _showLogoutConfirmation(context, authProvider);
                 },
                 icon: const Icon(Icons.logout),
                 label: const Text('SE DÉCONNECTER'),
@@ -269,6 +282,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     required IconData icon,
     required Function(String) onChanged,
     bool enabled = true,
+    int maxLines = 1,
   }) {
     if (_isEditing && enabled) {
       return Column(
@@ -284,6 +298,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           const SizedBox(height: 4),
           TextFormField(
             initialValue: value,
+            maxLines: maxLines,
             decoration: InputDecoration(
               prefixIcon: Icon(icon, size: 20),
               border: OutlineInputBorder(
@@ -378,7 +393,13 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Mot de passe modifié avec succès')),
+              );
+            },
             child: const Text('MODIFIER'),
           ),
         ],
@@ -386,7 +407,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     );
   }
 
-  void _showLogoutConfirmation() {
+  void _showLogoutConfirmation(
+      BuildContext context, AuthProvider authProvider) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -398,9 +420,12 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/login');
+            onPressed: () async {
+              await authProvider.logout();
+              if (context.mounted) {
+                Navigator.pop(context);
+                Navigator.pushReplacementNamed(context, '/login');
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,

@@ -1,6 +1,5 @@
-// lib/features/admin/presentation/screens/admin_users_screen.dart
 import 'package:flutter/material.dart';
-import '../../../../core/constants/colors.dart';
+import '../../../../constants/colors.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -14,10 +13,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   final List<String> _roles = [
     'Tous',
     'Citoyens',
-    'Administrateurs',
-    'Modérateurs'
+    'Techniciens',
+    'Administrateurs'
   ];
 
+  // Liste des utilisateurs mock
   final List<Map<String, dynamic>> _users = [
     {
       'id': '1',
@@ -27,6 +27,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       'status': 'Actif',
       'reports': 12,
       'joined': '2024-01-15',
+      'phone': '+261 34 12 345 67',
+      'adresse': 'Ambatovolo, Fianarantsoa',
+      'cin': '10123456789',
     },
     {
       'id': '2',
@@ -36,15 +39,21 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       'status': 'Actif',
       'reports': 45,
       'joined': '2023-11-20',
+      'phone': '+261 34 23 456 78',
+      'adresse': 'Centre ville, Fianarantsoa',
+      'cin': '10123456790',
     },
     {
       'id': '3',
       'name': 'Ahmed Ben Ali',
       'email': 'ahmed.benali@email.com',
-      'role': 'Modérateur',
+      'role': 'Technicien',
       'status': 'Inactif',
       'reports': 23,
       'joined': '2024-02-10',
+      'phone': '+261 34 34 567 89',
+      'adresse': 'Andrainjato, Fianarantsoa',
+      'cin': '10123456791',
     },
     {
       'id': '4',
@@ -54,6 +63,21 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       'status': 'Actif',
       'reports': 8,
       'joined': '2024-03-05',
+      'phone': '+261 34 45 678 90',
+      'adresse': 'Manandona, Fianarantsoa',
+      'cin': '10123456792',
+    },
+    {
+      'id': '5',
+      'name': 'Admin System',
+      'email': 'admin@test.com',
+      'role': 'Administrateur',
+      'status': 'Actif',
+      'reports': 156,
+      'joined': '2023-01-01',
+      'phone': '+261 34 00 000 00',
+      'adresse': 'Mairie, Fianarantsoa',
+      'cin': 'ADMIN001',
     },
   ];
 
@@ -61,7 +85,14 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   Widget build(BuildContext context) {
     final filteredUsers = _selectedRole == 'Tous'
         ? _users
-        : _users.where((user) => user['role'] == _selectedRole).toList();
+        : _users.where((user) {
+            if (_selectedRole == 'Citoyens') return user['role'] == 'Citoyen';
+            if (_selectedRole == 'Techniciens')
+              return user['role'] == 'Technicien';
+            if (_selectedRole == 'Administrateurs')
+              return user['role'] == 'Administrateur';
+            return true;
+          }).toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -100,10 +131,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     AppColors.primary),
                 const SizedBox(width: 12),
                 _buildUserStat(
-                    'Actifs', '32', Icons.check_circle, AppColors.resolved),
+                    'Actifs', '4', Icons.check_circle, AppColors.resolved),
                 const SizedBox(width: 12),
                 _buildUserStat(
-                    'Nouveaux', '8', Icons.person_add, AppColors.warning),
+                    'Nouveaux', '2', Icons.person_add, AppColors.warning),
               ],
             ),
           ),
@@ -131,6 +162,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       },
                       backgroundColor: Colors.grey[100],
                       selectedColor: AppColors.primary.withValues(alpha: 0.1),
+                      labelStyle: TextStyle(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
                     ),
                   );
                 }),
@@ -322,7 +360,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
+        height: MediaQuery.of(context).size.height * 0.8,
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -385,8 +423,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildInfoRow('Rôle', user['role']),
+                    _buildInfoRow('Rôle', user['role'],
+                        statusColor: _getRoleColor(user['role'])),
                     _buildInfoRow('Statut', user['status']),
+                    _buildInfoRow('Téléphone', user['phone']),
+                    _buildInfoRow('Adresse', user['adresse']),
+                    _buildInfoRow('CIN', user['cin']),
                     _buildInfoRow('Signalements', user['reports'].toString()),
                     _buildInfoRow('Date inscription', user['joined']),
                     const SizedBox(height: 24),
@@ -396,12 +438,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           child: OutlinedButton.icon(
                             onPressed: () {
                               Navigator.pop(context);
+                              _showEditUserDialog(user);
                             },
-                            icon: const Icon(Icons.block),
-                            label: const Text('DÉSACTIVER'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                            ),
+                            icon: const Icon(Icons.edit),
+                            label: const Text('MODIFIER'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -409,14 +449,34 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.pop(context);
-                              _showEditUserDialog(user);
+                              _showDeleteConfirmation(user);
                             },
-                            icon: const Icon(Icons.edit),
-                            label: const Text('MODIFIER'),
+                            icon: const Icon(Icons.delete),
+                            label: const Text('SUPPRIMER'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.error,
+                            ),
                           ),
                         ),
                       ],
                     ),
+                    if (user['role'] != 'Administrateur') ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showChangeRoleDialog(user);
+                          },
+                          icon: const Icon(Icons.swap_horiz),
+                          label: const Text('CHANGER LE RÔLE'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.warning,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -427,10 +487,11 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String value, {Color? statusColor}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 120,
@@ -443,13 +504,27 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            child: statusColor != null
+                ? Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: statusColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                : Text(
+                    value,
+                    style: const TextStyle(fontSize: 14),
+                  ),
           ),
         ],
       ),
@@ -461,38 +536,63 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Ajouter un utilisateur'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Nom complet',
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email),
-              ),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Rôle',
-                prefixIcon: Icon(Icons.assignment_ind),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'Citoyen', child: Text('Citoyen')),
-                DropdownMenuItem(
-                    value: 'Modérateur', child: Text('Modérateur')),
-                DropdownMenuItem(
-                    value: 'Administrateur', child: Text('Administrateur')),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Nom complet',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Téléphone',
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Adresse',
+                    prefixIcon: Icon(Icons.home),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Rôle',
+                    prefixIcon: Icon(Icons.assignment_ind),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'Citoyen', child: Text('Citoyen')),
+                    DropdownMenuItem(
+                        value: 'Technicien', child: Text('Technicien')),
+                  ],
+                  onChanged: (value) {},
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Mot de passe temporaire',
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                ),
               ],
-              onChanged: (value) {},
             ),
-          ],
+          ),
         ),
         actions: [
           TextButton(
@@ -500,7 +600,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Utilisateur ajouté avec succès')),
+              );
+            },
             child: const Text('AJOUTER'),
           ),
         ],
@@ -513,41 +618,46 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Modifier utilisateur'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: TextEditingController(text: user['name']),
-              decoration: const InputDecoration(
-                labelText: 'Nom complet',
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: TextEditingController(text: user['email']),
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email),
-              ),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: user['role'],
-              decoration: const InputDecoration(
-                labelText: 'Rôle',
-                prefixIcon: Icon(Icons.assignment_ind),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'Citoyen', child: Text('Citoyen')),
-                DropdownMenuItem(
-                    value: 'Modérateur', child: Text('Modérateur')),
-                DropdownMenuItem(
-                    value: 'Administrateur', child: Text('Administrateur')),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: TextEditingController(text: user['name']),
+                  decoration: const InputDecoration(
+                    labelText: 'Nom complet',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: TextEditingController(text: user['email']),
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: TextEditingController(text: user['phone']),
+                  decoration: const InputDecoration(
+                    labelText: 'Téléphone',
+                    prefixIcon: Icon(Icons.phone),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: TextEditingController(text: user['adresse']),
+                  decoration: const InputDecoration(
+                    labelText: 'Adresse',
+                    prefixIcon: Icon(Icons.home),
+                  ),
+                ),
               ],
-              onChanged: (value) {},
             ),
-          ],
+          ),
         ),
         actions: [
           TextButton(
@@ -555,8 +665,71 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Utilisateur modifié avec succès')),
+              );
+            },
             child: const Text('ENREGISTRER'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangeRoleDialog(Map<String, dynamic> user) {
+    final newRole = user['role'] == 'Citoyen' ? 'Technicien' : 'Citoyen';
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Changer le rôle'),
+        content: Text(
+            'Voulez-vous changer le rôle de ${user['name']} de "${user['role']}" à "$newRole" ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                    content: Text(
+                        'Rôle changé : ${user['name']} est maintenant $newRole')),
+              );
+            },
+            child: const Text('CONFIRMER'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(Map<String, dynamic> user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer l\'utilisateur'),
+        content: Text('Voulez-vous vraiment supprimer ${user['name']} ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Utilisateur ${user['name']} supprimé')),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+            ),
+            child: const Text('SUPPRIMER'),
           ),
         ],
       ),
@@ -565,7 +738,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
   void _exportUsers() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Exportation en cours...')),
+      const SnackBar(content: Text('Exportation des utilisateurs en cours...')),
     );
   }
 
@@ -573,7 +746,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     switch (role) {
       case 'Administrateur':
         return AppColors.error;
-      case 'Modérateur':
+      case 'Technicien':
         return AppColors.warning;
       case 'Citoyen':
         return AppColors.primary;
