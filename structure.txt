@@ -1,0 +1,151 @@
+backend/
+│
+├── src/
+│   │
+│   ├── app/                     ← démarrage serveur/config express
+│   │    ├── app.js
+│   │    └── server.js
+│   │
+│   ├── core/                    ← code commun/global
+│   │    ├── config/
+│   │    ├── middleware/
+│   │    ├── database/
+│   │    ├── utils/
+│   │    └── errors/
+│   │
+│   ├── features/
+│   │    │
+│   │    ├── users/
+│   │    │    │
+│   │    │    ├── presentation/      ← routes + controllers
+│   │    │    │    ├── user.routes.js
+│   │    │    │    └── user.controller.js
+│   │    │    │
+│   │    │    ├── domain/            ← logique métier
+│   │    │    │    ├── user.service.js
+│   │    │    │    ├── user.model.js
+│   │    │    │    └── user.repository.js
+│   │    │    │
+│   │    │    └── data/              ← accès données/API
+│   │    │         ├── user.datasource.js
+│   │    │         └── user.mock.js
+│   │    │
+│   │    ├── auth/
+│   │    ├── products/
+│   │    └── orders/
+│   │
+│   ├── routes/                  ← centralisation routes
+│   │    └── index.js
+│   │
+│   └── shared/                  ← éléments réutilisables
+│        ├── constants/
+│        └── helpers/
+│
+├── package.json
+├── .env
+└── README.md
+
+otrzw zn ' lib/
+├── app/                          # Configuration globale
+│   ├── app.dart                  # Widget racine
+│   ├── routes.dart               # Routes nommées
+│   └── theme.dart                # Thème (couleurs, typo, etc.)
+│
+├── core/                         # Code partagé (indépendant des features)
+│   ├── constants/
+│   │   ├── assets.dart           # Chemins des images
+│   │   └── strings.dart          # Textes statiques
+│   ├── di/
+│   │   └── injection.dart        # Configuration dépendances (get_it)
+│   ├── network/
+│   │   ├── api_client.dart       # HTTP client configuré
+│   │   └── endpoints.dart        # URLs des APIs
+│   ├── utils/
+│   │   ├── date_formatter.dart   # Helpers
+│   │   └── validators.dart       # Validation email, etc.
+│   └── widgets/                  # Widgets réutilisables
+│       ├── loading_button.dart
+│       ├── error_snackbar.dart
+│       └── custom_app_bar.dart
+│
+└── features/                     # Modules métiers
+    │
+    ├── auth/                     # Feature: authentification
+    │   ├── presentation/
+    │   │   ├── screens/
+    │   │   │   ├── login_screen.dart
+    │   │   │   └── register_screen.dart
+    │   │   ├── widgets/
+    │   │   │   ├── email_input.dart
+    │   │   │   └── password_input.dart
+    │   │   ├── providers/
+    │   │   │   └── auth_provider.dart    # State (Riverpod/Provider)
+    │   │   └── pages/                    # Optionnel: pour onglets
+    │   │       └── auth_page.dart
+    │   │
+    │   ├── domain/               # Cœur métier (sans Flutter)
+    │   │   ├── entities/
+    │   │   │   └── user.dart     # Entité User (dart pur)
+    │   │   ├── usecases/
+    │   │   │   ├── login_usecase.dart
+    │   │   │   └── register_usecase.dart
+    │   │   └── repositories/
+    │   │       └── auth_repository.dart   # Interface
+    │   │
+    │   └── data/                 # Implémentation concrète
+    │       ├── repositories/
+    │       │   └── auth_repository_impl.dart
+    │       ├── datasources/
+    │       │   ├── auth_remote_datasource.dart   # API call
+    │       │   └── auth_local_datasource.dart    # SharedPrefs
+    │       └── models/
+    │           └── user_model.dart    # + JSON serialization
+    │
+    ├── todo/                     # Feature: tâches
+    │   ├── presentation/
+    │   │   ├── screens/
+    │   │   │   ├── todo_list_screen.dart
+    │   │   │   └── todo_detail_screen.dart
+    │   │   ├── widgets/
+    │   │   │   ├── todo_card.dart
+    │   │   │   └── add_todo_dialog.dart
+    │   │   └── providers/
+    │   │       └── todo_provider.dart
+    │   │
+    │   ├── domain/
+    │   │   ├── entities/
+    │   │   │   └── todo.dart
+    │   │   ├── usecases/
+    │   │   │   ├── get_todos_usecase.dart
+    │   │   │   ├── add_todo_usecase.dart
+    │   │   │   └── toggle_todo_usecase.dart
+    │   │   └── repositories/
+    │   │       └── todo_repository.dart
+    │   │
+    │   └── data/
+    │       ├── repositories/
+    │       │   └── todo_repository_impl.dart
+    │       ├── datasources/
+    │       │   ├── todo_remote_datasource.dart
+    │       │   └── todo_local_datasource.dart (SQLite/Hive)
+    │       └── models/
+    │           └── todo_model.dart
+    │
+    └── settings/                 # Feature: paramètres
+        ├── presentation/
+        │   ├── screens/
+        │   │   └── settings_screen.dart
+        │   └── providers/
+        │       └── settings_provider.dart
+        │
+        ├── domain/
+        │   ├── entities/
+        │   │   └── app_settings.dart
+        │   └── repositories/
+        │       └── settings_repository.dart
+        │
+        └── data/
+            ├── repositories/
+            │   └── settings_repository_impl.dart
+            └── datasources/
+                └── settings_local_datasource.dart
