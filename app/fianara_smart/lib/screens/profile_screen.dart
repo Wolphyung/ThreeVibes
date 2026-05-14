@@ -14,14 +14,6 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profil'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              // Aller aux paramètres
-            },
-          ),
-        ],
       ),
       body: user == null
           ? const Center(child: Text('Non connecté'))
@@ -29,9 +21,8 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Photo de profil
                   Center(
-                    child: Stack(
+                    child: Column(
                       children: [
                         Container(
                           width: 100,
@@ -44,152 +35,167 @@ class ProfileScreen extends StatelessWidget {
                             child: Text(
                               user.initials,
                               style: const TextStyle(
-                                fontSize: 32,
+                                fontSize: 36,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.primary),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              size: 20,
-                              color: AppColors.primary,
-                            ),
+                        const SizedBox(height: 12),
+                        Text(
+                          user.fullName,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.verified,
+                                size: 14,
+                                color: AppColors.secondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Citoyen Vérifié • Fianarantsoa, MG',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'ID: ${user.codeUtilisateur}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Nom
-                  Text(
-                    user.fullName,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      user.role.label,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 32),
-
-                  // Informations
-                  Card(
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildProfileItem(
+                        const Text(
+                          'INFORMATIONS PERSONNELLES',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildInfoRow(
                           icon: Icons.email_outlined,
                           label: 'Email',
                           value: user.email,
                         ),
-                        const Divider(height: 1),
-                        _buildProfileItem(
+                        const Divider(),
+                        _buildInfoRow(
                           icon: Icons.phone_outlined,
                           label: 'Téléphone',
-                          value: user.phoneNumber ?? 'Non renseigné',
+                          value: user.phoneNumber ?? '+216 22 333 444',
                         ),
-                        const Divider(height: 1),
-                        _buildProfileItem(
-                          icon: Icons.home_outlined,
-                          label: 'Adresse',
-                          value: user.adresse,
-                        ),
-                        const Divider(height: 1),
-                        _buildProfileItem(
-                          icon: Icons.badge_outlined,
-                          label: 'Code utilisateur',
-                          value: user.codeUtilisateur,
-                        ),
-                        const Divider(height: 1),
-                        _buildProfileItem(
+                        const Divider(),
+                        _buildInfoRow(
                           icon: Icons.credit_card_outlined,
-                          label: 'CIN',
+                          label: 'Numéro CIN',
                           value: user.numCIN,
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Boutons d'action
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      // Modifier le profil
-                    },
-                    icon: const Icon(Icons.edit_outlined),
-                    label: const Text('MODIFIER LE PROFIL'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'PARAMÈTRES DE L\'APPLICATION',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ListTile(
+                          leading: Icon(Icons.notifications_none,
+                              color: AppColors.primary),
+                          title: const Text('Notifications'),
+                          trailing: Switch(
+                            value: true,
+                            onChanged: (value) {},
+                            activeColor: AppColors.primary,
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        ListTile(
+                          leading:
+                              Icon(Icons.security, color: AppColors.primary),
+                          title: const Text('Sécurité & MDP'),
+                          trailing: const Icon(Icons.chevron_right),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () {},
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.logout, color: AppColors.error),
+                          title: const Text('Déconnexion'),
+                          trailing: const Icon(Icons.chevron_right),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () {
+                            _showLogoutDialog(context, authProvider);
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      _showLogoutDialog(context, authProvider);
-                    },
-                    icon: const Icon(Icons.logout, color: AppColors.error),
-                    label: const Text('SE DÉCONNECTER'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      side: const BorderSide(color: AppColors.error),
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  Text(
-                    'Version 1.0.0',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textHint,
-                    ),
-                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildProfileItem({
+  Widget _buildInfoRow({
     required IconData icon,
     required String label,
     required String value,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 24, color: AppColors.primary),
+          Icon(icon, size: 20, color: AppColors.primary),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -202,7 +208,7 @@ class ProfileScreen extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   value,
                   style: const TextStyle(

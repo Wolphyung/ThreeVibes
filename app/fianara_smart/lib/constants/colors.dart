@@ -1,54 +1,42 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary Colors
-  static const Color primary = Color(0xFF1E3A8A);
-  static const Color primaryLight = Color(0xFF3B82F6);
-  static const Color primaryDark = Color(0xFF1E40AF);
+  // Primary Colors - Style maquette
+  static const Color primary = Color(0xFF1A73E8); // Bleu principal
+  static const Color primaryLight = Color(0xFF4285F4);
+  static const Color primaryDark = Color(0xFF0D47A1);
 
   // Secondary Colors
-  static const Color secondary = Color(0xFF10B981);
-  static const Color secondaryLight = Color(0xFF34D399);
-  static const Color secondaryDark = Color(0xFF059669);
+  static const Color secondary = Color(0xFF34A853); // Vert
+  static const Color warning = Color(0xFFFBBC04); // Jaune/Orange
+  static const Color error = Color(0xFFEA4335); // Rouge
+  static const Color success = Color(0xFF34A853); // Vert (alias de secondary)
 
-  // Accent Colors
-  static const Color accent = Color(0xFFF59E0B);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
-  static const Color success = Color(0xFF10B981);
-  static const Color info = Color(0xFF3B82F6);
+  // Status Colors
+  static const Color pending = Color(0xFFFBBC04); // En cours - Orange
+  static const Color inProgress = Color(0xFF1A73E8); // En traitement - Bleu
+  static const Color resolved = Color(0xFF34A853); // Traité - Vert
+  static const Color rejected = Color(0xFFEA4335); // Rejeté - Rouge
 
   // Neutral Colors
-  static const Color background = Color(0xFFF8FAFC);
+  static const Color background = Color(0xFFF8F9FA);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color card = Color(0xFFFFFFFF);
 
   // Text Colors
-  static const Color textPrimary = Color(0xFF1E293B);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textHint = Color(0xFF94A3B8);
+  static const Color textPrimary = Color(0xFF202124);
+  static const Color textSecondary = Color(0xFF5F6368);
+  static const Color textHint = Color(0xFF9AA0A6);
   static const Color textWhite = Color(0xFFFFFFFF);
 
   // Border Colors
-  static const Color border = Color(0xFFE2E8F0);
-  static const Color borderLight = Color(0xFFF1F5F9);
-
-  // Status Colors
-  static const Color pending = Color(0xFFF59E0B);
-  static const Color inProgress = Color(0xFF3B82F6);
-  static const Color resolved = Color(0xFF10B981);
-  static const Color rejected = Color(0xFFEF4444);
+  static const Color border = Color(0xFFE8EAED);
+  static const Color divider = Color(0xFFF1F3F4);
 
   // Gradient
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [primary, primaryLight],
-  );
-
-  static const LinearGradient secondaryGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [secondary, secondaryLight],
   );
 }

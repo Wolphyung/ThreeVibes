@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _isPasswordVisible = false;
-  bool _rememberMe = false;
+  bool _isLoginMode = true;
 
   @override
   void dispose() {
@@ -27,25 +27,34 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleAuth() async {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
+    bool success;
+
+    if (_isLoginMode) {
+      success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+    } else {
+      success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+    }
 
     if (success && mounted) {
-      Navigator.of(context).pushReplacement(
+      Navigator.pushReplacement(
+        context,
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Erreur de connexion'),
+          content: Text(authProvider.errorMessage ?? 'Erreur'),
           backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -61,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              // Logo et titre
               Center(
                 child: Column(
                   children: [
@@ -89,7 +97,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Connectez-vous à votre compte',
+                      _isLoginMode
+                          ? 'Connectez-vous à votre compte'
+                          : 'Créez votre compte',
                       style: TextStyle(
                         fontSize: 16,
                         color: AppColors.textSecondary,
@@ -99,7 +109,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              // Formulaire
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildAuthTab('Connexion', true),
+                  const SizedBox(width: 32),
+                  _buildAuthTab('Inscription', false),
+                ],
+              ),
+              const SizedBox(height: 32),
               Form(
                 key: _formKey,
                 child: Column(
@@ -109,15 +127,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'Email',
+                        hintText: 'votre@email.com',
                         prefixIcon: Icon(Icons.email_outlined),
-                        hintText: 'exemple@email.com',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Veuillez entrer votre email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Email invalide';
                         }
                         return null;
                       },
@@ -128,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         labelText: 'Mot de passe',
+                        hintText: '********',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -141,14 +157,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             });
                           },
                         ),
-                        hintText: '••••••••',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Veuillez entrer votre mot de passe';
-                        }
-                        if (value.length < 6) {
-                          return 'Mot de passe trop court (min 6 caractères)';
                         }
                         return null;
                       },
@@ -156,116 +168,100 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              // Options supplémentaires
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _rememberMe,
-                        onChanged: (value) {
-                          setState(() {
-                            _rememberMe = value ?? false;
-                          });
-                        },
-                        activeColor: AppColors.primary,
-                      ),
-                      const Text(
-                        'Se souvenir de moi',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Mot de passe oublié
-                    },
+              if (_isLoginMode) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {},
                     child: const Text('Mot de passe oublié ?'),
                   ),
-                ],
-              ),
+                ),
+              ],
               const SizedBox(height: 32),
-              // Bouton de connexion
               Consumer<AuthProvider>(
                 builder: (context, authProvider, child) {
-                  return ElevatedButton(
-                    onPressed: authProvider.isLoading ? null : _handleLogin,
-                    child: authProvider.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text('SE CONNECTER'),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              // Bouton d'inscription
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                  );
-                },
-                child: const Text('CRÉER UN COMPTE'),
-              ),
-              const SizedBox(height: 32),
-              // Séparateur
-              Row(
-                children: [
-                  Expanded(child: Divider(color: AppColors.border)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'OU',
-                      style: TextStyle(color: AppColors.textSecondary),
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: authProvider.isLoading ? null : _handleAuth,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                      ),
+                      child: authProvider.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(_isLoginMode ? 'Se connecter' : 'S\'inscrire'),
                     ),
-                  ),
-                  Expanded(child: Divider(color: AppColors.border)),
-                ],
+                  );
+                },
               ),
-              const SizedBox(height: 32),
-              // Connexion sociale
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              const SizedBox(height: 24),
+              const Row(
                 children: [
-                  _buildSocialButton(
-                    icon: Icons.g_mobiledata,
-                    color: Colors.red,
-                    onPressed: () {},
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('OU CONTINUER AVEC'),
                   ),
-                  const SizedBox(width: 16),
-                  _buildSocialButton(
-                    icon: Icons.facebook,
-                    color: Colors.blue,
-                    onPressed: () {},
-                  ),
-                  const SizedBox(width: 16),
-                  _buildSocialButton(
-                    icon: Icons.apple,
-                    color: Colors.black,
-                    onPressed: () {},
-                  ),
+                  Expanded(child: Divider()),
                 ],
               ),
               const SizedBox(height: 24),
-              // Version
-              Center(
-                child: Text(
-                  'Version 1.0.0',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textHint,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 140,
+                    child: OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.g_mobiledata),
+                      label: const Text('Google'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: 140,
+                    child: OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.facebook),
+                      label: const Text('Facebook'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 32),
+              if (!_isLoginMode)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Déjà un compte ? ',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _isLoginMode = true;
+                        });
+                      },
+                      child: const Text('Se connecter'),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -273,21 +269,30 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildSocialButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(icon, color: color, size: 24),
+  Widget _buildAuthTab(String title, bool isActive) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isLoginMode = isActive;
+        });
+      },
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              color: isActive ? AppColors.primary : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 2,
+            width: 50,
+            color: isActive ? AppColors.primary : Colors.transparent,
+          ),
+        ],
       ),
     );
   }

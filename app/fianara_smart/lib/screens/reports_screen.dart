@@ -12,6 +12,9 @@ class ReportsScreen extends StatefulWidget {
 }
 
 class _ReportsScreenState extends State<ReportsScreen> {
+  String _selectedFilter = 'Tous';
+  final List<String> _filters = ['Tous', 'En cours', 'Traités', 'Rejetés'];
+
   @override
   void initState() {
     super.initState();
@@ -24,148 +27,119 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mes signalements'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {},
-          ),
-        ],
+        title: const Text('Mes Signalements'),
+        centerTitle: false,
       ),
-      body: Consumer<ReportProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading && provider.reports.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (provider.reports.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.report_problem_outlined,
-                      size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('Aucun signalement',
-                      style: TextStyle(color: Colors.grey)),
-                  SizedBox(height: 8),
-                  Text(
-                    'Utilisez le bouton + pour signaler un problème',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
+      body: Column(
+        children: [
+          // Barre de recherche
+          Padding(
             padding: const EdgeInsets.all(16),
-            itemCount: provider.reports.length,
-            itemBuilder: (context, index) {
-              final report = provider.reports[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/report-detail',
-                      arguments: report,
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: _getColorForReportType(report.type),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                report.type.icon,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    report.title,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    report.locationAddress,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Chip(
-                              label: Text(
-                                report.status.label,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                              backgroundColor:
-                                  report.status.color.withValues(alpha: 0.2),
-                              labelStyle: TextStyle(color: report.status.color),
-                            ),
-                          ],
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Rechercher un signalement...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: AppColors.background,
+              ),
+            ),
+          ),
+
+          // Filtres
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: _filters.map((filter) {
+                final isSelected = _selectedFilter == filter;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedFilter = filter;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: isSelected
+                                ? AppColors.primary
+                                : Colors.transparent,
+                            width: 2,
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          report.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                      child: Text(
+                        filter,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                size: 14, color: AppColors.textHint),
-                            const SizedBox(width: 4),
-                            Text(
-                              report.timeAgo,
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textHint),
-                            ),
-                            const Spacer(),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/report-detail',
-                                  arguments: report,
-                                );
-                              },
-                              child: const Text('VOIR DÉTAIL'),
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              }).toList(),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Liste des signalements
+          Expanded(
+            child: Consumer<ReportProvider>(
+              builder: (context, provider, child) {
+                if (provider.isLoading && provider.reports.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final filteredReports = provider.reports.where((report) {
+                  if (_selectedFilter == 'Tous') return true;
+                  if (_selectedFilter == 'En cours')
+                    return report.status == ReportStatus.inProgress;
+                  if (_selectedFilter == 'Traités')
+                    return report.status == ReportStatus.resolved;
+                  if (_selectedFilter == 'Rejetés')
+                    return report.status == ReportStatus.rejected;
+                  return true;
+                }).toList();
+
+                if (filteredReports.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.report_problem_outlined,
+                            size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('Aucun signalement',
+                            style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: filteredReports.length,
+                  itemBuilder: (context, index) {
+                    final report = filteredReports[index];
+                    return _buildReportCard(context, report);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -177,24 +151,118 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  Color _getColorForReportType(ReportType type) {
-    switch (type) {
-      case ReportType.cleanliness:
-        return Colors.green;
-      case ReportType.infrastructure:
-        return Colors.orange;
-      case ReportType.security:
-        return Colors.red;
-      case ReportType.traffic:
-        return Colors.blue;
-      case ReportType.lighting:
-        return Colors.amber;
-      case ReportType.waste:
-        return Colors.brown;
-      case ReportType.water:
-        return Colors.cyan;
+  Widget _buildReportCard(BuildContext context, ReportModel report) {
+    String refNumber = 'SIG-2023-00${report.id}';
+    String statusText = '';
+    Color statusColor = AppColors.pending;
+
+    switch (report.status) {
+      case ReportStatus.inProgress:
+        statusText = 'EN COURS';
+        statusColor = AppColors.inProgress;
+        break;
+      case ReportStatus.resolved:
+        statusText = 'TRAITÉ';
+        statusColor = AppColors.resolved;
+        break;
+      case ReportStatus.rejected:
+        statusText = 'REJETÉ';
+        statusColor = AppColors.rejected;
+        break;
       default:
-        return Colors.grey;
+        statusText = 'EN ATTENTE';
+        statusColor = AppColors.pending;
     }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(context, '/report-detail', arguments: report);
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    refNumber,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    report.formattedDate.split('à')[0].trim(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                report.title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                report.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.location_on, size: 14, color: AppColors.textHint),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      report.locationAddress,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textHint,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: statusColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

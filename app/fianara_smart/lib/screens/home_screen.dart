@@ -20,9 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _screens = [
     const DashboardScreen(),
-    const MapScreen(),
-    const AnnouncementsScreen(),
     const ReportsScreen(),
+    const AnnouncementsScreen(),
     const ProfileScreen(),
   ];
 
@@ -48,15 +47,15 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final user = authProvider.currentUser;
 
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          expandedHeight: 200,
-          floating: true,
-          pinned: true,
-          flexibleSpace: FlexibleSpaceBar(
-            background: Container(
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header avec gradient
+            Container(
               decoration: const BoxDecoration(
                 gradient: AppColors.primaryGradient,
               ),
@@ -65,22 +64,20 @@ class DashboardScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        'Bonjour ${authProvider.currentUser?.prenoms ?? "Visiteur"}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      const Text(
+                        'Bonjour,',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white70,
                         ),
                       ),
-                      const SizedBox(height: 8),
                       Text(
-                        'Bienvenue sur Fianara Smart City',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withValues(alpha: 0.9),
+                        user?.fullName ?? 'Jean Dupont',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -88,274 +85,256 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.all(16),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              _buildStatsSection(context),
-              const SizedBox(height: 24),
-              _buildQuickActions(context),
-              const SizedBox(height: 24),
-              _buildRecentAnnouncements(context),
-              const SizedBox(height: 24),
-              _buildRecentReports(context),
-            ]),
-          ),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildStatsSection(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            title: 'Signalements',
-            value: '24',
-            icon: Icons.report_problem,
-            color: AppColors.error,
-          ),
+            // Statistiques
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      title: 'Signalements',
+                      value: '12',
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      title: 'Traités',
+                      value: '8',
+                      color: AppColors.resolved,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Actions rapides
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Actions Rapides',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      _buildQuickAction(
+                        icon: Icons.report_problem,
+                        label: 'SIGNALER',
+                        color: AppColors.error,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/report-form');
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      _buildQuickAction(
+                        icon: Icons.map,
+                        label: 'CARTE',
+                        color: AppColors.primary,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/map');
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      _buildQuickAction(
+                        icon: Icons.notifications,
+                        label: 'ANNONCES',
+                        color: AppColors.warning,
+                        onTap: () {
+                          Navigator.pushNamed(context, '/announcements');
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      _buildQuickAction(
+                        icon: Icons.person,
+                        label: 'PROFIL',
+                        color: AppColors.secondary,
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Activités récentes
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Activités Récentes',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/reports');
+                    },
+                    child: const Text('Voir tout'),
+                  ),
+                ],
+              ),
+            ),
+
+            // Liste des activités
+            ...List.generate(2, (index) {
+              final activities = [
+                {
+                  'title': 'Incendie Mineur',
+                  'location': 'Rue de la Liberté',
+                  'time': '2h ago',
+                  'status': 'EN COURS',
+                  'statusColor': AppColors.inProgress,
+                },
+                {
+                  'title': 'Fuite d\'Eau',
+                  'location': 'Av. Bourguiba',
+                  'time': 'Hier',
+                  'status': 'TRAITÉ',
+                  'statusColor': AppColors.resolved,
+                },
+              ];
+              final activity = activities[index];
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Card(
+                  child: ListTile(
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: (activity['statusColor'] as Color)
+                            .withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        activity['title'] == 'Incendie Mineur'
+                            ? Icons.local_fire_department
+                            : Icons.water_damage,
+                        color: activity['statusColor'] as Color,
+                      ),
+                    ),
+                    title: Text(activity['title'] as String),
+                    subtitle:
+                        Text('${activity['location']} • ${activity['time']}'),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: (activity['statusColor'] as Color)
+                            .withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        activity['status'] as String,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: activity['statusColor'] as Color,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    onTap: () {},
+                  ),
+                ),
+              );
+            }),
+
+            const SizedBox(height: 80),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            title: 'En cours',
-            value: '12',
-            icon: Icons.hourglass_empty,
-            color: AppColors.warning,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            title: 'Résolus',
-            value: '45',
-            icon: Icons.check_circle,
-            color: AppColors.success,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildStatCard({
     required String title,
     required String value,
-    required IconData icon,
     required Color color,
   }) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Actions rapides',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionButton(
-                icon: Icons.add_location,
-                label: 'Signaler',
-                color: AppColors.error,
-                onTap: () {
-                  Navigator.pushNamed(context, '/report-form');
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                icon: Icons.notifications_active,
-                label: 'Annonces',
-                color: AppColors.info,
-                onTap: () {
-                  Navigator.pushNamed(context, '/announcements');
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                icon: Icons.map,
-                label: 'Carte',
-                color: AppColors.secondary,
-                onTap: () {
-                  Navigator.pushNamed(context, '/map');
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
+  Widget _buildQuickAction({
     required IconData icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: color,
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: color,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildRecentAnnouncements(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Annonces récentes',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/announcements');
-              },
-              child: const Text('Voir tout'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 2,
-          itemBuilder: (context, index) {
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child:
-                      const Icon(Icons.notifications, color: AppColors.primary),
-                ),
-                title: const Text('Nouvelle fonctionnalité'),
-                subtitle: const Text('Découvrez les nouvelles options...'),
-                trailing: const Text('Il y a 2h'),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecentReports(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Signalements récents',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/reports');
-              },
-              child: const Text('Voir tout'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 2,
-          itemBuilder: (context, index) {
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.warning.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.warning, color: AppColors.warning),
-                ),
-                title: const Text('Déchet sur la voie publique'),
-                subtitle: const Text('Ambatovolo, Fianarantsoa'),
-                trailing: Chip(
-                  label: const Text('En attente'),
-                  backgroundColor: AppColors.pending.withValues(alpha: 0.2),
-                  labelStyle: const TextStyle(fontSize: 10),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
     );
   }
 }

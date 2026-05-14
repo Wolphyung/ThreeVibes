@@ -13,17 +13,22 @@ class ReportFormScreen extends StatefulWidget {
 
 class _ReportFormScreenState extends State<ReportFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  ReportType _selectedType = ReportType.other;
-  File? _imageFile;
+  ReportType? _selectedType;
   final LocationService _locationService = LocationService();
 
   bool _isLoading = false;
   double? _latitude;
   double? _longitude;
   String _address = '';
+
+  final List<ReportType> _categories = [
+    ReportType.water,
+    ReportType.lighting,
+    ReportType.infrastructure,
+    ReportType.security,
+  ];
 
   @override
   void initState() {
@@ -33,60 +38,22 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
 
   Future<void> _getCurrentLocation() async {
     setState(() => _isLoading = true);
-
     final location = await _locationService.getCurrentLocationModel();
     if (location != null) {
       setState(() {
         _latitude = location.latitude;
         _longitude = location.longitude;
-        _address = location.address ?? 'Position actuelle';
+        _address = location.address ?? 'Cliquez pour définir la position';
       });
     }
-
     setState(() => _isLoading = false);
   }
 
-  void _showImageSourceDialog() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Prendre une photo'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Implémenter la caméra
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Choisir dans la galerie'),
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Implémenter la galerie
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _submitReport() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_latitude == null || _longitude == null) {
+    if (!_formKey.currentState!.validate() || _selectedType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Veuillez activer votre localisation'),
+          content: Text('Veuillez remplir tous les champs'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -94,19 +61,17 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
     }
 
     setState(() => _isLoading = true);
-
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Signalement envoyé avec succès !'),
-          backgroundColor: AppColors.success,
+          backgroundColor: AppColors.secondary,
         ),
       );
       Navigator.pop(context);
     }
-
     setState(() => _isLoading = false);
   }
 
@@ -114,7 +79,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nouveau signalement'),
+        title: const Text('Nouveau Signalement'),
       ),
       body: Form(
         key: _formKey,
@@ -122,56 +87,71 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             const Text(
-              'Type de signalement',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              'Catégorie du problème',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Wrap(
-              spacing: 8,
-              children: ReportType.values.map((type) {
+              spacing: 12,
+              runSpacing: 12,
+              children: _categories.map((type) {
                 final isSelected = _selectedType == type;
+                String label = '';
+                switch (type) {
+                  case ReportType.water:
+                    label = 'EAU & ASSAIN.';
+                    break;
+                  case ReportType.lighting:
+                    label = 'ÉLECTRICITÉ';
+                    break;
+                  case ReportType.infrastructure:
+                    label = 'VOIRIE';
+                    break;
+                  case ReportType.security:
+                    label = 'SÉCURITÉ';
+                    break;
+                  default:
+                    label = type.label.toUpperCase();
+                }
                 return FilterChip(
-                  label: Text(type.label),
+                  label: Text(label),
                   selected: isSelected,
                   onSelected: (selected) {
                     setState(() {
-                      _selectedType = type;
+                      _selectedType = selected ? type : null;
                     });
                   },
                   backgroundColor: Colors.white,
                   selectedColor: AppColors.primary.withValues(alpha: 0.1),
                   checkmarkColor: AppColors.primary,
                   labelStyle: TextStyle(
-                    color:
-                        isSelected ? AppColors.primary : AppColors.textPrimary,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? AppColors.primary : AppColors.border,
                   ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Titre',
-                hintText: 'Ex: Problème d\'éclairage public',
-                prefixIcon: Icon(Icons.title),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Veuillez entrer un titre';
-                }
-                return null;
-              },
+            const SizedBox(height: 24),
+            const Text(
+              'Description détaillée',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _descriptionController,
               maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Décrivez le problème en détail...',
-                prefixIcon: Icon(Icons.description),
+              decoration: InputDecoration(
+                hintText: 'Décrivez le problème ici...',
                 alignLabelWithHint: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -180,87 +160,75 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
+            const SizedBox(height: 24),
+            const Text(
+              'Localisation',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () {
+                Navigator.pushNamed(context, '/map').then((_) {
+                  _getCurrentLocation();
+                });
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.location_on, color: AppColors.primary),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Localisation',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_isLoading)
-                      const Center(child: CircularProgressIndicator())
-                    else if (_latitude != null)
-                      Column(
+                    Icon(Icons.map_outlined, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Adresse: $_address'),
-                          const SizedBox(height: 4),
                           Text(
-                            'Coordonnées: $_latitude, $_longitude',
-                            style: const TextStyle(fontSize: 12),
+                            'Sélectionner sur la carte',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primary,
+                            ),
                           ),
+                          if (_address.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _address,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ],
-                      )
-                    else
-                      const Text(
-                        'Localisation non disponible',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      onPressed: _getCurrentLocation,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Actualiser'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.photo_camera, color: AppColors.primary),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Photo (optionnelle)',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _showImageSourceDialog,
-                        icon: const Icon(Icons.add_a_photo),
-                        label: const Text('Ajouter une photo'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.all(16),
-                        ),
                       ),
                     ),
+                    Icon(Icons.chevron_right, color: AppColors.textHint),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
+            const Text(
+              'Photos / Documents',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.add_photo_alternate_outlined),
+              label: const Text('AJOUTER'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                minimumSize: const Size(double.infinity, 0),
+              ),
+            ),
+            const SizedBox(height: 32),
             ElevatedButton(
               onPressed: _isLoading ? null : _submitReport,
               style: ElevatedButton.styleFrom(
@@ -277,7 +245,7 @@ class _ReportFormScreenState extends State<ReportFormScreen> {
                       ),
                     )
                   : const Text(
-                      'ENVOYER LE SIGNALEMENT',
+                      'Soumettre le signalement',
                       style: TextStyle(fontSize: 16),
                     ),
             ),

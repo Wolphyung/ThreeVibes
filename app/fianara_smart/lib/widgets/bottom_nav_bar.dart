@@ -24,27 +24,22 @@ class BottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           activeIcon: Icon(Icons.home),
-          label: 'Accueil',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map_outlined),
-          activeIcon: Icon(Icons.map),
-          label: 'Carte',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.notifications_outlined),
-          activeIcon: Icon(Icons.notifications),
-          label: 'Annonces',
+          label: 'ACCUEIL',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.report_problem_outlined),
           activeIcon: Icon(Icons.report_problem),
-          label: 'Signalements',
+          label: 'SIGNALEMENTS',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications_none),
+          activeIcon: Icon(Icons.notifications),
+          label: 'ANNONCES',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
           activeIcon: Icon(Icons.person),
-          label: 'Profil',
+          label: 'PROFIL',
         ),
       ],
     );
