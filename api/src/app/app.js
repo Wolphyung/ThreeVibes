@@ -4,7 +4,6 @@ const morgan = require('morgan');
 const routes = require('../routes');
 
 
-
 const app = express();
 
 // Middlewares
@@ -19,7 +18,7 @@ app.use('/api', routes);
 // Base route
 app.get('/', (req, res) => {
 
-  res.json({ message: 'Welcome to ThreeVibes API' });
+  res.json({ message: 'API fonctionnelle' });
 });
 
 // Error handling middleware

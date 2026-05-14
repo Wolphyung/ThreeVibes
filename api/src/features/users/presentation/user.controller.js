@@ -5,6 +5,7 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 
+//format Json
 
 const register = async (req, res, next) => {
   try {
