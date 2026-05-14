@@ -7,10 +7,17 @@ const findById = (id) =>
   db.query('SELECT * FROM utilisateur WHERE codeutilisateur = $1', [id]);
 
 const generateCodeUtilisateur = async () => {
-  const query = 'SELECT MAX(codeutilisateur) FROM utilisateur';
-  const result = await db.query(query);
-  const maxCode = parseInt(result.rows[0].max.substring(1));
-  return `U${maxCode + 1}`;
+  const query =
+        'SELECT codeutilisateur FROM public.utilisateur ORDER BY codeutilisateur DESC LIMIT 1';
+      const result = await db.query(query);
+      let nextNumber = 1;
+      if (result.rows.length > 0) {
+        const lastCode = result.rows[0].codeutilisateur;
+        const lastNumber = parseInt(lastCode.replace("U", ""));
+        nextNumber = lastNumber + 1;
+      }
+  
+      return `U${nextNumber.toString().padStart(4, "0")}`;
 };
 
 const create = async (user) => {
