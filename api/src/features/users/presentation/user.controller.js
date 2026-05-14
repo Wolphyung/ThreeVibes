@@ -82,4 +82,56 @@ const getMe = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+<<<<<<< HEAD
 module.exports = { register, login, update, remove, forgotPassword, resetPassword, getMe };
+=======
+const getAll = async (req, res, next) => {
+  try {
+    const { q } = req.query;
+    const result = await service.getAllUsers(q || "");
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
+
+// --- FONCTION CRUD ---
+
+const listFonctions = async (req, res, next) => {
+  try {
+    const result = await service.getAllFonctions();
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
+
+const getFonction = async (req, res, next) => {
+  try {
+    const result = await service.getFonctionById(req.params.id);
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
+
+const createFonction = async (req, res, next) => {
+  try {
+    const result = await service.createFonction(req.body.nomfonction);
+    res.status(201).json(result);
+  } catch (err) { next(err); }
+};
+
+const updateFonction = async (req, res, next) => {
+  try {
+    const result = await service.updateFonction(req.params.id, req.body.nomfonction);
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
+
+const deleteFonction = async (req, res, next) => {
+  try {
+    const result = await service.deleteFonction(req.params.id);
+    res.status(200).json(result);
+  } catch (err) { next(err); }
+};
+
+module.exports = { 
+  register, login, update, remove, forgotPassword, resetPassword, getMe, getAll,
+  listFonctions, getFonction, createFonction, updateFonction, deleteFonction
+};
+>>>>>>> 73904af4531c335332c27d955fb36665d9b72e56
