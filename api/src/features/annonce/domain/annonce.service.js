@@ -12,7 +12,7 @@ class AnnonceService {
 
       // On lie chaque URL à l'annonce dans la table de liaison
       for (const res of uploadResults) {
-        await AnnonceDatasource.linkPJ(annonce.codeAnnonce, res.url);
+        await AnnonceDatasource.linkPJ(annonce.codeannonce, res.url);
       }
 
       // On ajoute les URLs au retour pour confirmation
