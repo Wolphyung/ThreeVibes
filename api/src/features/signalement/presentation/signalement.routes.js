@@ -18,14 +18,16 @@ router.get('/', (req, res) => SignalementController.getAll(req, res));
 // GET /api/signalements/by-fonction/:codeFonction — signalements by fonction
 router.get('/by-fonction/:codeFonction', (req, res) => SignalementController.getByFonction(req, res));
 
-// GET /api/signalements/suivi/:codeUtilisateur — signalements suivis by user
-router.get('/suivi/:codeUtilisateur', (req, res) => SignalementController.getSuiviByUser(req, res));
-
 // GET /api/signalements/nearby?lat=...&lng=...&count=... — nearest signalements
 router.get('/nearby', (req, res) => SignalementController.getNearby(req, res));
 
 // GET /api/signalements/:code — get one with PJs
 router.get('/:code', (req, res) => SignalementController.getById(req, res));
+
+router.get('/:codeSignalement/suivi', (req, res) => SignalementController.getSuiviSignalement(req, res));
+
+router.get('/:codeSignalement/suivi/etat', (req, res) => SignalementController.getSuiviState(req, res));
+
 
 // POST /api/signalements — create with files
 router.post('/', upload.array('files', 10), (req, res) => SignalementController.create(req, res));
@@ -52,6 +54,9 @@ router.delete('/:code/specialisations/:codeFonction', (req, res) => SignalementC
 // ==========================================
 // SUIVI
 // ==========================================
+
+// GET /api/signalements/suivi/:codeUtilisateur — signalements suivis by user
+router.get('/suivi/:codeUtilisateur', (req, res) => SignalementController.getSuiviByUser(req, res));
 
 // POST /api/signalements/:code/suivi — follow a signalement
 router.post('/:code/suivi', (req, res) => SignalementController.follow(req, res));

@@ -120,6 +120,14 @@ class SignalementService {
   async getSignalementsSuivis(codeUtilisateur) {
     return await signalementDatasource.getSignalementsSuivis(codeUtilisateur);
   }
+
+  async getSuiviBySignalement(codeSignalement) {
+    return await signalementDatasource.getSuiviBySignalement(codeSignalement);
+  }
+
+  async getSuiviState(codeSignalement) {
+    return await signalementDatasource.getSuiviState(codeSignalement);
+  }
 }
 
 module.exports = new SignalementService();

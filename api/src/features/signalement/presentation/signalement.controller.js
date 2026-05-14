@@ -208,6 +208,25 @@ class SignalementController {
       res.status(500).json({ error: error.message });
     }
   }
+  async getSuiviSignalement(req, res) {
+    try {
+      const { codeSignalement } = req.params;
+      const result = await SignalementService.getSuiviBySignalement(codeSignalement);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async getSuiviState(req, res){
+    try {
+      const { codeSignalement } = req.params;
+      const result = await SignalementService.getSuiviState(codeSignalement);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new SignalementController();

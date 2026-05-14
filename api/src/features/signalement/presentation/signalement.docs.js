@@ -342,3 +342,41 @@
  *       404:
  *         description: Suivi not found
  */
+
+/**
+ * @swagger
+ * /signalements/{code}/suivi:
+ *   get:
+ *     tags: [Suivi]
+ *     summary: Get all suivis for a signalement
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Signalement code (e.g. S0001)
+ *     responses:
+ *       200:
+ *         description: List of suivis for the signalement
+ */
+
+/**
+ * @swagger
+ * /signalements/{code}/suivi/etat:
+ *   get:
+ *     tags: [Signalements]
+ *     summary: Get the state of suivis for a signalement
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Signalement code (e.g. S0001)
+ *     responses:
+ *       200:
+ *         description: State of suivis for the signalement
+ */
+
+

@@ -180,6 +180,24 @@ class SignalementDatasource {
     const result = await db.query(query, [codeUtilisateur]);
     return result.rows;
   }
+
+  async getSuiviBySignalement(codeSignalement) {
+    const query = `SELECT S.*, U.Nom, U.Prenoms, F.CODEFONCTION, F.NOMFONCTION 
+      FROM SUIVRE S 
+      JOIN UTILISATEUR U ON S.CODEUTILISATEUR = U.CODEUTILISATEUR
+      JOIN FONCTION F ON U.CODEFONCTION = F.CODEFONCTION
+      WHERE S.CODESIGNALEMENT = $1`;
+    const result = await db.query(query, [codeSignalement]);
+    return result.rows;
+  }
+
+  async getSuiviState(codeSignalement) {
+    const query = `SELECT S.CODESIGNALEMENT, S.ETATSUIVI, S.DATESUIVI
+      FROM SUIVRE S 
+      WHERE S.CODESIGNALEMENT = $1 ORDER BY S.DATESUIVI DESC LIMIT 1`;
+    const result = await db.query(query, [codeSignalement]);
+    return result.rows;
+  }
 }
 
 
