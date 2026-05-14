@@ -1,47 +1,50 @@
 const AnnonceService = require("../domain/annonce.service");
 
-const AnnonceController = {
-  create: async (req, res) => {
+class AnnonceController {
+  create = async (req, res) => {
     try {
-      const data = await AnnonceService.create(req.body);
-      res.status(201).json(data);
-    } catch (e) {
-      res.status(500).json({ error: e.message });
+      // On passe le body et le fichier au service
+      const result = await AnnonceService.createAnnonce(req.body, req.file);
+      res.status(201).json(result);
+    } catch (error) {
+      console.error("Erreur Controller Create:", error.message);
+      res.status(500).json({ error: error.message });
     }
-  },
-  getAll: async (req, res) => {
-    try {
-      const data = await AnnonceService.findAll();
-      res.json(data);
-    } catch (e) {
-      res.status(500).json({ error: e.message });
-    }
-  },
-  getOne: async (req, res) => {
-    try {
-      const data = await AnnonceService.findOne(req.params.id);
-      if (!data) return res.status(404).send("Annonce non trouvée");
-      res.json(data);
-    } catch (e) {
-      res.status(500).json({ error: e.message });
-    }
-  },
-  update: async (req, res) => {
-    try {
-      const data = await AnnonceService.update(req.params.id, req.body);
-      res.json(data);
-    } catch (e) {
-      res.status(500).json({ error: e.message });
-    }
-  },
-  delete: async (req, res) => {
-    try {
-      await AnnonceService.remove(req.params.id);
-      res.status(204).send();
-    } catch (e) {
-      res.status(500).json({ error: e.message });
-    }
-  },
-};
+  };
 
-module.exports = AnnonceController;
+  list = async (req, res) => {
+    try {
+      const { q } = req.query;
+      const annonces = await AnnonceService.listAnnonces(q || "");
+      res.json(annonces);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  update = async (req, res) => {
+    try {
+      const result = await AnnonceService.updateAnnonce(
+        req.params.id,
+        req.body,
+      );
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  remove = async (req, res) => {
+    try {
+      await AnnonceService.deleteAnnonce(req.params.id);
+      // On passe en 200 avec un petit message JSON
+      res.status(200).json({
+        message: `L'annonce ${req.params.id} a été supprimée avec succès.`,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+}
+
+module.exports = new AnnonceController();

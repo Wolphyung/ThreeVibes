@@ -1,12 +1,12 @@
 -- -----------------------------------------------------------------------------
 --             G‚n‚ration d'une base de donn‚es pour
 --                           PostgreSQL
---                        (14/5/2026 11:52:49)
+--                        (14/5/2026 14:28:08)
 -- -----------------------------------------------------------------------------
---      Nom de la base : ThreeVibes
+--      Nom de la base : MLR3
 --      Projet : 
 --      Auteur : Francky
---      Date de derniŠre modification : 14/5/2026 11:50:54
+--      Date de derniŠre modification : 14/5/2026 14:27:36
 -- -----------------------------------------------------------------------------
 
 -- -----------------------------------------------------------------------------
@@ -41,28 +41,17 @@ CREATE TABLE UTILISATEUR
    );
 
 -- -----------------------------------------------------------------------------
---       TABLE : LOCALISATION
--- -----------------------------------------------------------------------------
-
-CREATE TABLE LOCALISATION
-   (
-    LATITUDE float8 NOT NULL  ,
-    LONGITUDE float8 NOT NULL  
-,   CONSTRAINT PK_LOCALISATION PRIMARY KEY (LATITUDE, LONGITUDE)
-   );
-
--- -----------------------------------------------------------------------------
 --       TABLE : ANNONCE
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE ANNONCE
    (
-    LATITUDE float8 NOT NULL  ,
-    LONGITUDE float8 NOT NULL  ,
     CODECATEGORIE char(5) NULL  ,
     DATEANNONCE timestamp NULL  ,
     CONTENUANNONCE text NULL  ,
-    CODEANNONCE char(5) NOT NULL  
+    CODEANNONCE char(5) NOT NULL  ,
+    LATITUDE float8 NULL  ,
+    LONGITUDE float8 NULL  
 ,   CONSTRAINT PK_ANNONCE PRIMARY KEY (CODEANNONCE)
    );
 
@@ -105,13 +94,13 @@ CREATE TABLE INSTRUCTION_DOSSIER
 
 CREATE TABLE SIGNALEMENT
    (
-    LATITUDE float8 NOT NULL  ,
-    LONGITUDE float8 NOT NULL  ,
     CODEUTILISATEUR char(5) NOT NULL  ,
     DATESIGNALEMENT date NULL  ,
     DESCRIPTION text NULL  ,
     TYPESIGNALEMENT varchar(128) NULL  ,
-    CODESIGNALEMENT char(5) NOT NULL  
+    CODESIGNALEMENT char(5) NOT NULL  ,
+    LATITUDE float8 NULL  ,
+    LONGITUDE float8 NULL  
 ,   CONSTRAINT PK_SIGNALEMENT PRIMARY KEY (CODESIGNALEMENT)
    );
 
@@ -184,19 +173,9 @@ ALTER TABLE UTILISATEUR ADD
                REFERENCES FONCTION (CODEFONCTION);
 
 ALTER TABLE ANNONCE ADD 
-     CONSTRAINT FK_ANNONCE_LOCALISATION
-          FOREIGN KEY (LATITUDE, LONGITUDE)
-               REFERENCES LOCALISATION (LATITUDE, LONGITUDE);
-
-ALTER TABLE ANNONCE ADD 
      CONSTRAINT FK_ANNONCE_CATEGORIE
           FOREIGN KEY (CODECATEGORIE)
                REFERENCES CATEGORIE (CODECATEGORIE);
-
-ALTER TABLE SIGNALEMENT ADD 
-     CONSTRAINT FK_SIGNALEMENT_LOCALISATION
-          FOREIGN KEY (LATITUDE, LONGITUDE)
-               REFERENCES LOCALISATION (LATITUDE, LONGITUDE);
 
 ALTER TABLE SIGNALEMENT ADD 
      CONSTRAINT FK_SIGNALEMENT_UTILISATEUR

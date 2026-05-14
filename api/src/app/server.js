@@ -2,7 +2,6 @@ const app = require("./app");
 const { PORT } = require("../core/config/env");
 const db = require("../core/database/db");
 
-app.use("/api/annonces", annonceRoutes);
 
 async function startServer() {
   try {
