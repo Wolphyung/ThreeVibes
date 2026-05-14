@@ -26,15 +26,13 @@ const chat = async (userMessage, codedossier = null) => {
     }
   }
 
-  // 2. Si pas trouvé en DB → recherche web
-  if (!context) {
+if (!context) {
     try {
       const searchResult = await tavilyClient.search(userMessage, {
         searchDepth: 'advanced',
         includeDomains: ['torolalana.gov.mg'],
         maxResults: 5
       });
-
       if (searchResult.results.length > 0) {
         context = searchResult.results.map(r =>
           `Source: ${r.url}\n${r.content}`
@@ -46,7 +44,7 @@ const chat = async (userMessage, codedossier = null) => {
     }
   }
 
-  // 3. Si toujours rien → recherche web générale
+  // 3. Fallback recherche générale
   if (!context) {
     try {
       const searchResult = await tavilyClient.search(
@@ -63,7 +61,6 @@ const chat = async (userMessage, codedossier = null) => {
       console.error('Tavily fallback error:', err.message);
     }
   }
-
   // 4. Groq synthétise
   const result = await client.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
