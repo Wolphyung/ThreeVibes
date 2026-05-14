@@ -249,7 +249,7 @@ class ProfileScreen extends StatelessWidget {
                                 trailing: Switch(
                                   value: true,
                                   onChanged: (value) {},
-                                  activeColor: AppColors.primary,
+                                  activeThumbColor: AppColors.primary,
                                 ),
                               ),
                               _buildDivider(),
@@ -559,9 +559,9 @@ class ProfileScreen extends StatelessWidget {
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
 
-    bool _isCurrentPasswordVisible = false;
-    bool _isNewPasswordVisible = false;
-    bool _isConfirmPasswordVisible = false;
+    bool isCurrentPasswordVisible = false;
+    bool isNewPasswordVisible = false;
+    bool isConfirmPasswordVisible = false;
 
     showDialog(
       context: context,
@@ -601,21 +601,21 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   TextField(
                     controller: currentPasswordController,
-                    obscureText: !_isCurrentPasswordVisible,
+                    obscureText: !isCurrentPasswordVisible,
                     decoration: InputDecoration(
                       labelText: 'Mot de passe actuel',
                       hintText: 'Entrez votre mot de passe actuel',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _isCurrentPasswordVisible
+                          isCurrentPasswordVisible
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
                         onPressed: () {
                           setState(() {
-                            _isCurrentPasswordVisible =
-                                !_isCurrentPasswordVisible;
+                            isCurrentPasswordVisible =
+                                !isCurrentPasswordVisible;
                           });
                         },
                       ),
@@ -627,20 +627,20 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   TextField(
                     controller: newPasswordController,
-                    obscureText: !_isNewPasswordVisible,
+                    obscureText: !isNewPasswordVisible,
                     decoration: InputDecoration(
                       labelText: 'Nouveau mot de passe',
                       hintText: 'Minimum 6 caractères',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _isNewPasswordVisible
+                          isNewPasswordVisible
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
                         onPressed: () {
                           setState(() {
-                            _isNewPasswordVisible = !_isNewPasswordVisible;
+                            isNewPasswordVisible = !isNewPasswordVisible;
                           });
                         },
                       ),
@@ -652,21 +652,21 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   TextField(
                     controller: confirmPasswordController,
-                    obscureText: !_isConfirmPasswordVisible,
+                    obscureText: !isConfirmPasswordVisible,
                     decoration: InputDecoration(
                       labelText: 'Confirmer le mot de passe',
                       hintText: 'Retapez votre nouveau mot de passe',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _isConfirmPasswordVisible
+                          isConfirmPasswordVisible
                               ? Icons.visibility_off
                               : Icons.visibility,
                         ),
                         onPressed: () {
                           setState(() {
-                            _isConfirmPasswordVisible =
-                                !_isConfirmPasswordVisible;
+                            isConfirmPasswordVisible =
+                                !isConfirmPasswordVisible;
                           });
                         },
                       ),

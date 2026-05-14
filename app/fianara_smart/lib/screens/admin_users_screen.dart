@@ -87,10 +87,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         ? _users
         : _users.where((user) {
             if (_selectedRole == 'Citoyens') return user['role'] == 'Citoyen';
-            if (_selectedRole == 'Techniciens')
+            if (_selectedRole == 'Techniciens') {
               return user['role'] == 'Technicien';
-            if (_selectedRole == 'Administrateurs')
+            }
+            if (_selectedRole == 'Administrateurs') {
               return user['role'] == 'Administrateur';
+            }
             return true;
           }).toList();
 

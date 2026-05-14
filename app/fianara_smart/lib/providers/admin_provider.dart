@@ -433,15 +433,15 @@ class AdminProfile {
     bool? isActive,
   }) {
     return AdminProfile(
-      id: this.id,
+      id: id,
       name: name ?? this.name,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       department: department ?? this.department,
-      role: this.role,
+      role: role,
       bio: bio ?? this.bio,
-      avatarUrl: this.avatarUrl,
-      joinedAt: this.joinedAt,
+      avatarUrl: avatarUrl,
+      joinedAt: joinedAt,
       lastLogin: lastLogin ?? this.lastLogin,
       isActive: isActive ?? this.isActive,
     );

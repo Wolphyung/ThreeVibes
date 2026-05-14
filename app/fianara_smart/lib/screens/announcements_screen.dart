@@ -98,7 +98,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Catégorie',
                   prefixIcon: Icon(Icons.category),
@@ -143,7 +143,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                             isUrgent = value;
                           });
                         },
-                        activeColor: AppColors.error,
+                        activeThumbColor: AppColors.error,
                       ),
                     ),
                   ],
@@ -667,12 +667,15 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
   String _getTimeAgo(DateTime date) {
     final difference = DateTime.now().difference(date);
     if (difference.inDays > 7) return 'Il y a ${difference.inDays} jours';
-    if (difference.inDays > 0)
+    if (difference.inDays > 0) {
       return 'Il y a ${difference.inDays} jour${difference.inDays > 1 ? 's' : ''}';
-    if (difference.inHours > 0)
+    }
+    if (difference.inHours > 0) {
       return 'Il y a ${difference.inHours} heure${difference.inHours > 1 ? 's' : ''}';
-    if (difference.inMinutes > 0)
+    }
+    if (difference.inMinutes > 0) {
       return 'Il y a ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''}';
+    }
     return 'À l\'instant';
   }
 }

@@ -108,20 +108,20 @@ class UserModel {
     DateTime? lastLogin,
   }) {
     return UserModel(
-      id: this.id,
+      id: id,
       nom: nom ?? this.nom,
       prenoms: prenoms ?? this.prenoms,
-      numCIN: this.numCIN,
-      dateCIN: this.dateCIN,
-      lieuCIN: this.lieuCIN,
+      numCIN: numCIN,
+      dateCIN: dateCIN,
+      lieuCIN: lieuCIN,
       adresse: adresse ?? this.adresse,
-      role: this.role,
-      codeUtilisateur: this.codeUtilisateur,
-      email: this.email,
+      role: role,
+      codeUtilisateur: codeUtilisateur,
+      email: email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       profileImage: profileImage ?? this.profileImage,
       isActive: isActive ?? this.isActive,
-      createdAt: this.createdAt,
+      createdAt: createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
     );
   }

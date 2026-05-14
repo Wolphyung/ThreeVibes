@@ -27,7 +27,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
   double? _longitude;
   String _address = '';
   File? _imageFile;
-  List<File> _images = [];
+  final List<File> _images = [];
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
