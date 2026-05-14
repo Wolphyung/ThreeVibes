@@ -3,6 +3,7 @@ const userRouter = require('../features/users/presentation/user.routes');
 const attachmentRouter = require('../features/piece-jointe/presentation/pj.routes');
 const signalementRouter = require('../features/signalement/presentation/signalement.routes');
 const weatherRouter = require('../features/weather/presentation/weather.routes');
+const annonceRouter = require('../features/annonce/presentation/annonce.routes');
 
 const router = express.Router();
 const userRoutes = require('../features/users/presentation/user.routes');
@@ -13,6 +14,7 @@ router.use('/users', userRouter);
 router.use('/piece-jointe', attachmentRouter);
 router.use('/signalements', signalementRouter);
 router.use('/weather', weatherRouter);
+router.use('/annonces', annonceRouter);
 
 router.use('/users', userRoutes);
 router.use('/instruction-dossier', instructionDossierRoutes);
