@@ -2,15 +2,13 @@ const db = require("../../../core/database/db");
 
 class AnnonceDatasource {
   async generateCode() {
-    // On cherche le code le plus élevé au lieu de compter
     const query =
-      'SELECT "codeAnnonce" FROM public.annonce ORDER BY "codeAnnonce" DESC LIMIT 1';
+      'SELECT codeAnnonce FROM public.annonce ORDER BY codeAnnonce DESC LIMIT 1';
     const result = await db.query(query);
-
     let nextNumber = 1;
     if (result.rows.length > 0) {
       // On extrait le nombre du code (ex: "AN005" -> 5) et on ajoute 1
-      const lastCode = result.rows[0].codeAnnonce;
+      const lastCode = result.rows[0].codeannonce;
       const lastNumber = parseInt(lastCode.replace("AN", ""));
       nextNumber = lastNumber + 1;
     }
@@ -21,7 +19,7 @@ class AnnonceDatasource {
   create = async (data) => {
     const codeAnnonce = await this.generateCode();
     const query = `
-      INSERT INTO public.annonce (latitude, longitude, codecategorie, dateannonce, contenuannonce, "codeAnnonce")
+      INSERT INTO public.annonce (latitude, longitude, codecategorie, dateannonce, contenuannonce, codeAnnonce)
       VALUES ($1, $2, $3, NOW(), $4, $5) RETURNING *`;
 
     const values = [
@@ -43,9 +41,9 @@ class AnnonceDatasource {
         COALESCE(json_agg(pj.lien) FILTER (WHERE pj.lien IS NOT NULL), '[]') AS images
       FROM public.annonce a
       LEFT JOIN public.categorie c ON a.codecategorie = c.codecategorie
-      LEFT JOIN public.pjannonce pj ON a."codeAnnonce" = pj.codeannonce
+      LEFT JOIN public.pjannonce pj ON a.codeAnnonce = pj.codeannonce
       WHERE a.contenuannonce ILIKE $1 
-      GROUP BY a."codeAnnonce", c.nomcategorie, a.latitude, a.longitude, a.codecategorie, a.dateannonce, a.contenuannonce
+      GROUP BY a.codeAnnonce, c.nomcategorie, a.latitude, a.longitude, a.codecategorie, a.dateannonce, a.contenuannonce
       ORDER BY a.dateannonce DESC`;
 
     const result = await db.query(query, [`%${search}%`]);
@@ -56,7 +54,7 @@ class AnnonceDatasource {
     const query = `
       UPDATE public.annonce 
       SET latitude = $1, longitude = $2, codecategorie = $3, contenuannonce = $4
-      WHERE "codeAnnonce" = $5 RETURNING *`;
+      WHERE codeAnnonce = $5 RETURNING *`;
     const values = [
       data.latitude,
       data.longitude,
@@ -76,7 +74,7 @@ class AnnonceDatasource {
 
   // La méthode de suppression de l'annonce
   async delete(codeAnnonce) {
-    const query = 'DELETE FROM public.annonce WHERE "codeAnnonce" = $1';
+    const query = 'DELETE FROM public.annonce WHERE codeAnnonce = $1';
     const result = await db.query(query, [codeAnnonce]);
     return result.rowCount > 0;
   }
