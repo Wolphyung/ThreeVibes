@@ -13,12 +13,14 @@ const instructionDossierRoutes = require('../features/instructionDossier/present
 const chatbotRoutes = require('../features/chatbot/presentation/chatbot.routes');
 
 // Register features
+router.get('/health', (req, res) => res.json({ status: 'UP', timestamp: new Date() }));
 router.use('/users', userRouter);
 router.use('/piece-jointe', attachmentRouter);
 router.use('/signalements', signalementRouter);
 router.use('/weather', weatherRouter);
 router.use('/annonces', annonceRouter);
 router.use('/instruction-dossier', instructionDossierRoutes);
+router.use('/dossiers', instructionDossierRoutes); // Alias
 router.use('/chatbot', chatbotRoutes);
 
 module.exports = router;

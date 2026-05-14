@@ -19,31 +19,18 @@ app.use(express.urlencoded({ extended: true }));
 // Swagger documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Routes spécifiques aux annonces
-app.use("/api/annonces", annonceRoutes);
-
-// Autres routes de l'index
+// Main API routes (includes annonces, users, weather, etc.)
 app.use("/api", routes);
 
 // Base route
-<<<<<<< HEAD
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to ThreeVibes API" });
-=======
-app.get('/', (req, res) => {
-  res.json({ message: 'API fonctionnelle' });
->>>>>>> nyantsa
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-<<<<<<< HEAD
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
-=======
-  console.error(err.message);
-  res.status(err.status || 500).json({ error: err.message });
->>>>>>> nyantsa
 });
 
 module.exports = app;

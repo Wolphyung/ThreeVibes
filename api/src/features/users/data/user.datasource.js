@@ -1,4 +1,6 @@
 const db = require('../../../core/database/db');
+const pjService = require('../../piece-jointe/domain/pj.service');
+const pjController = require('../../piece-jointe/presentation/pj.controller');
 
 const findByEmail = (email) =>
   db.query('SELECT * FROM utilisateur WHERE email = $1', [email]);
@@ -20,7 +22,7 @@ const generateCodeUtilisateur = async () => {
       return `U${nextNumber.toString().padStart(4, "0")}`;
 };
 
-const create = async (user) => {
+const create = async (user, file) => {
   const findQuery = 'SELECT codefonction FROM fonction WHERE nomfonction = $1';
   let fonctionRes = await db.query(findQuery, [user.nomfonction]);
 
@@ -32,7 +34,13 @@ const create = async (user) => {
   } else {
     codeFonction = fonctionRes.rows[0].codefonction;
   }
+
+  if (file) {
+    const fileRes = await pjService.uploadAndSave(file);
+  }
+
   const codeUtilisateur = await generateCodeUtilisateur();
+
   return db.query(
     `INSERT INTO utilisateur (codeutilisateur, codefonction, nom, prenoms, numcin, datecin, lieucin, adresse, role, email, mdp)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
