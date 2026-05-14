@@ -22,6 +22,26 @@ class AnnonceService {
     return annonce;
   }
 
+  async createAnnonceWithDemande(annonceData, files) {
+    const annonce = await AnnonceDatasource.createWithDemande(annonceData);
+
+    if (files && files.length > 0) {
+      const uploadResults = await PJService.uploadMultiple(files);
+
+      // On lie chaque URL à l'annonce dans la table de liaison
+      for (const res of uploadResults) {
+        await AnnonceDatasource.linkPJ(annonce.codeannonce, res.url);
+      }
+
+      // On ajoute les URLs au retour pour confirmation
+      annonce.images = uploadResults.map((r) => r.url);
+    }
+
+    const demande = await this.addDemande(annonceData.codeUtilisateur, annonce.codeannonce);
+
+    return { annonce, demande };
+  }
+
   listAnnonces = async (search) => {
     return await AnnonceDatasource.getAll(search);
   };
@@ -59,6 +79,37 @@ class AnnonceService {
   deleteCategorie = async (id) => {
     return await AnnonceDatasource.deleteCategorie(id);
   };
+
+  // --- DEMANDER METHODS ---
+
+  async listDemandes(q) {
+    return await AnnonceDatasource.listDemandes(q);
+  }
+
+  async addDemande(codeUtilisateur, codeAnnonce) {
+    return await AnnonceDatasource.addDemande(codeUtilisateur, codeAnnonce);
+  }
+
+  async getDemandesByAnnonce(codeAnnonce) {
+    return await AnnonceDatasource.getDemandesByAnnonce(codeAnnonce);
+  }
+
+  async getDemandesByUser(codeUtilisateur) {
+    return await AnnonceDatasource.getDemandesByUser(codeUtilisateur);
+  }
+
+  async removeDemande(codeUtilisateur, codeAnnonce) {
+    return await AnnonceDatasource.removeDemande(codeUtilisateur, codeAnnonce);
+  }
+
+  async refuseDemande(codeAnnonce) {
+    return  await this.updateAnnonce(codeAnnonce, { etatannonce: "refusé" });
+  }
+
+  async acceptDemande(codeAnnonce) {
+    return await this.updateAnnonce(codeAnnonce, { etatannonce: "accepté" });
+    
+  }
 }
 
 module.exports = new AnnonceService();

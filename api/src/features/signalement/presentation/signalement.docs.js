@@ -40,6 +40,13 @@
  *   get:
  *     tags: [Signalements]
  *     summary: Get all signalements
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Search term to filter by type or description
  *     responses:
  *       200:
  *         description: List of all signalements

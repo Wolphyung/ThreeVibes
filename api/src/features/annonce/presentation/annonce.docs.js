@@ -202,5 +202,125 @@
  *         description: Category updated successfully
  *       500:
  *         description: Server error
- *  
+ * 
+ * 
+ * /annonces/demandes/annonce/{id}:
+ *   get:
+ *     tags: [Demandes]
+ *     summary: List all demands for a specific announcement
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of demands with user details
+ * 
+ * /annonces/demandes/user/{id}:
+ *   get:
+ *     tags: [Demandes]
+ *     summary: List all announcements requested by a specific user
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of announcements
+ * 
+ * 
+ * /annonces/create-with-demande:
+ *   post:
+ *     tags: [Annonces]
+ *     summary: Create a newannonce with attached files and demande
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - codeCategorie
+ *               - contenu
+ *               - codeUtilisateur
+ *             properties:
+ *               latitude:
+ *                 type: number
+ *                 format: float
+ *                 description: Latitude coordinate
+ *               longitude:
+ *                 type: number
+ *                 format: float
+ *                 description: Longitude coordinate
+ *               codeCategorie:
+ *                 type: string
+ *                 description: Category code (e.g. C0001)
+ *               codeUtilisateur:
+ *                 type: string
+ *                 description: Utilisateur code (e.g. U0001)
+ *               contenu:
+ *                 type: string
+ *                 description: Content of the annonce
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Images to attach (max 5)
+ *     responses:
+ *       201:
+ *         description: Annonce created successfully
+ *       500:
+ *         description: Server error
+ * 
+ * /annonces/demandes/accept/{codeAnnonce}:
+ *   put:
+ *     tags: [Demandes]
+ *     summary: Accept a demande
+ *     parameters:
+ *       - in: path
+ *         name: codeAnnonce
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Demande accepted successfully
+ *       500:
+ *         description: Server error
+ * 
+ * /annonces/demandes/refuse/{codeAnnonce}:
+ *   put:
+ *     tags: [Demandes]
+ *     summary: Refuse a demande
+ *     parameters:
+ *       - in: path
+ *         name: codeAnnonce
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Demande refused successfully
+ *       500:
+ *         description: Server error
+ * 
+ * /annonces/demandes:
+ *   get:
+ *     tags: [Demandes]
+ *     summary: List all demands
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Search term to filter by contenuannonce
+ *     responses:
+ *       200:
+ *         description: List of demands
  */

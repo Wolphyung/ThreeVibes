@@ -36,8 +36,8 @@ class AnnonceDatasource {
   create = async (data) => {
     const codeAnnonce = await this.generateCode();
     const query = `
-      INSERT INTO public.annonce (latitude, longitude, codecategorie, dateannonce, contenuannonce, codeAnnonce)
-      VALUES ($1, $2, $3, NOW(), $4, $5) RETURNING *`;
+      INSERT INTO public.annonce (latitude, longitude, codecategorie, dateannonce, contenuannonce, codeAnnonce, etatannonce)
+      VALUES ($1, $2, $3, NOW(), $4, $5, 'accepté') RETURNING *`;
 
     const values = [
       data.latitude,
@@ -50,6 +50,26 @@ class AnnonceDatasource {
     const result = await db.query(query, values);
     return result.rows[0];
   };
+
+  createWithDemande = async (data) => {
+    const codeAnnonce = await this.generateCode();
+    const query = `
+      INSERT INTO public.annonce (latitude, longitude, codecategorie, dateannonce, contenuannonce, codeAnnonce, etatannonce)
+      VALUES ($1, $2, $3, NOW(), $4, $5, 'en attente de validation') RETURNING *`;
+      
+    const values = [
+      data.latitude,
+      data.longitude,
+      data.codeCategorie,
+      data.contenu,
+      codeAnnonce,
+    ];
+
+    const result = await db.query(query, values);
+    return result.rows[0];
+  };
+
+
   async getAll(search = "") {
     const query = `
       SELECT 
@@ -59,7 +79,8 @@ class AnnonceDatasource {
       FROM public.annonce a
       LEFT JOIN public.categorie c ON a.codecategorie = c.codecategorie
       LEFT JOIN public.pjannonce pj ON a.codeAnnonce = pj.codeannonce
-      WHERE a.contenuannonce ILIKE $1 
+      WHERE a.contenuannonce ILIKE $1
+      AND a.etatannonce = 'accepté'
       GROUP BY a.codeAnnonce, c.nomcategorie, a.latitude, a.longitude, a.codecategorie, a.dateannonce, a.contenuannonce
       ORDER BY a.dateannonce DESC`;
 
@@ -70,13 +91,20 @@ class AnnonceDatasource {
   async update(id, data) {
     const query = `
       UPDATE public.annonce 
-      SET latitude = $1, longitude = $2, codecategorie = $3, contenuannonce = $4
-      WHERE codeAnnonce = $5 RETURNING *`;
+      SET 
+        latitude = COALESCE($1, latitude), 
+        longitude = COALESCE($2, longitude), 
+        codecategorie = COALESCE($3, codecategorie), 
+        contenuannonce = COALESCE($4, contenuannonce), 
+        etatannonce = COALESCE($5, etatannonce)
+      WHERE codeAnnonce = $6 
+      RETURNING *`;
     const values = [
       data.latitude,
       data.longitude,
       data.codeCategorie,
       data.contenu,
+      data.etatannonce,
       id,
     ];
     const result = await db.query(query, values);
@@ -128,6 +156,50 @@ class AnnonceDatasource {
     const values = [codeCategorie, data.nomcategorie];
     const result = await db.query(query, values);
     return result.rows[0];
+  }
+
+  // --- DEMANDER TABLE CRUD ---
+
+  listDemandes = async (q = "") => {
+    const query = `
+      SELECT a.* 
+      FROM public.annonce a 
+      WHERE a.etatannonce <> 'accepté' AND a.etatannonce <> 'refusé'
+      AND a.contenuannonce ILIKE $1`;
+    const result = await db.query(query, [`%${q}%`]);
+    return result.rows;
+  }
+  
+  async addDemande(codeUtilisateur, codeAnnonce) {
+    const query = 'INSERT INTO public.demander (codeutilisateur, codeannonce) VALUES ($1, $2) RETURNING *';
+    const result = await db.query(query, [codeUtilisateur, codeAnnonce]);
+    return result.rows[0];
+  }
+
+  async getDemandesByAnnonce(codeAnnonce) {
+    const query = `
+      SELECT d.*, u.nom, u.prenoms, u.email 
+      FROM public.demander d
+      JOIN public.utilisateur u ON d.codeutilisateur = u.codeutilisateur
+      WHERE d.codeannonce = $1`;
+    const result = await db.query(query, [codeAnnonce]);
+    return result.rows;
+  }
+
+  async getDemandesByUser(codeUtilisateur) {
+    const query = `
+      SELECT d.*, a.contenuannonce, a.dateannonce 
+      FROM public.demander d
+      JOIN public.annonce a ON d.codeannonce = a.codeannonce
+      WHERE d.codeutilisateur = $1`;
+    const result = await db.query(query, [codeUtilisateur]);
+    return result.rows;
+  }
+
+  async removeDemande(codeUtilisateur, codeAnnonce) {
+    const query = 'DELETE FROM public.demander WHERE codeutilisateur = $1 AND codeannonce = $2 RETURNING *';
+    const result = await db.query(query, [codeUtilisateur, codeAnnonce]);
+    return result.rowCount > 0;
   }
 }
 
