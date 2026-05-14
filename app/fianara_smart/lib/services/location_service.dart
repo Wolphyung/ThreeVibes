@@ -1,9 +1,15 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../models/location_model.dart';
 
 class LocationService {
-  Future<bool> checkPermission() async {
+  static const double defaultLatitude = -21.4333;
+  static const double defaultLongitude = 47.0858;
+  static const String defaultAddress = 'Fianarantsoa, Madagascar';
+
+  Future<bool> _checkPermissions() async {
     LocationPermission permission = await Geolocator.checkPermission();
 
     if (permission == LocationPermission.denied) {
@@ -20,33 +26,46 @@ class LocationService {
     return true;
   }
 
-  Future<Position?> getCurrentLocation() async {
-    final hasPermission = await checkPermission();
-    if (!hasPermission) return null;
-
+  Future<LocationModel?> getCurrentLocation() async {
     try {
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+      final hasPermission = await _checkPermissions();
+
+      if (hasPermission) {
+        // Utiliser la vraie localisation GPS
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
+        final address = await getAddressFromCoordinates(
+          position.latitude,
+          position.longitude,
+        );
+
+        return LocationModel(
+          latitude: position.latitude,
+          longitude: position.longitude,
+          address: address,
+        );
+      }
+
+      // Fallback à la localisation simulée
+      return LocationModel(
+        latitude: defaultLatitude,
+        longitude: defaultLongitude,
+        address: defaultAddress,
       );
     } catch (e) {
-      return null;
+      debugPrint('Erreur de localisation: $e');
+      return LocationModel(
+        latitude: defaultLatitude,
+        longitude: defaultLongitude,
+        address: defaultAddress,
+      );
     }
   }
 
   Future<LocationModel?> getCurrentLocationModel() async {
-    final position = await getCurrentLocation();
-    if (position == null) return null;
-
-    final address = await getAddressFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-
-    return LocationModel(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      address: address,
-    );
+    return await getCurrentLocation();
   }
 
   Future<String> getAddressFromCoordinates(double lat, double lng) async {
@@ -62,9 +81,9 @@ class LocationService {
         ].where((e) => e != null && e.isNotEmpty).join(', ');
       }
     } catch (e) {
-      return '$lat, $lng';
+      debugPrint('Erreur géocodage: $e');
     }
-    return '$lat, $lng';
+    return defaultAddress;
   }
 
   Future<double> calculateDistance(
@@ -73,6 +92,17 @@ class LocationService {
     double lat2,
     double lng2,
   ) async {
-    return Geolocator.distanceBetween(lat1, lng1, lat2, lng2);
+    const double earthRadius = 6371000.0;
+
+    double lat1Rad = lat1 * pi / 180.0;
+    double lat2Rad = lat2 * pi / 180.0;
+    double deltaLat = (lat2 - lat1) * pi / 180.0;
+    double deltaLng = (lng2 - lng1) * pi / 180.0;
+
+    double a = sin(deltaLat / 2.0) * sin(deltaLat / 2.0) +
+        cos(lat1Rad) * cos(lat2Rad) * sin(deltaLng / 2.0) * sin(deltaLng / 2.0);
+    double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+
+    return earthRadius * c;
   }
 }

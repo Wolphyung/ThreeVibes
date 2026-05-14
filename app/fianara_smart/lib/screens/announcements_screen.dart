@@ -13,17 +13,39 @@ class AnnouncementsScreen extends StatefulWidget {
   State<AnnouncementsScreen> createState() => _AnnouncementsScreenState();
 }
 
-class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
+class _AnnouncementsScreenState extends State<AnnouncementsScreen>
+    with SingleTickerProviderStateMixin {
   String _selectedFilter = 'Tout';
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
   final List<String> _filters = ['Tout', 'Sécurité', 'Travaux', 'Événements'];
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    _animationController.forward();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<AnnouncementProvider>(context, listen: false)
           .fetchAnnouncements();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _showAddAnnouncementDialog() {
@@ -49,7 +71,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Titre
               TextField(
                 controller: titleController,
                 decoration: const InputDecoration(
@@ -62,8 +83,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Contenu
               TextField(
                 controller: contentController,
                 maxLines: 5,
@@ -78,8 +97,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Catégorie
               DropdownButtonFormField<String>(
                 value: selectedCategory,
                 decoration: const InputDecoration(
@@ -102,8 +119,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Urgent
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -140,9 +155,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
             child: const Text('Annuler'),
           ),
           ElevatedButton(
@@ -159,7 +171,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
                 );
                 return;
               }
-
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -171,7 +182,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             ),
             child: const Text('PUBLIER'),
           ),
@@ -180,94 +190,218 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
     );
   }
 
+  List<AnnouncementModel> _filterAnnouncements(
+      List<AnnouncementModel> announcements) {
+    return announcements.where((announcement) {
+      // Filtre par catégorie (simulé)
+      if (_selectedFilter != 'Tout') {
+        // Logique de filtrage par catégorie à implémenter
+        return true;
+      }
+      return true;
+    }).where((announcement) {
+      // Filtre par recherche
+      if (_searchQuery.isEmpty) return true;
+      return announcement.title
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()) ||
+          announcement.content
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final isAdmin = authProvider.currentUser?.role == UserRole.admin;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Annonces'),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_active),
-            onPressed: () {},
-          ),
-        ],
-      ),
       body: Column(
         children: [
-          // Filtres
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: _filters.map((filter) {
-                final isSelected = _selectedFilter == filter;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedFilter = filter;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+          // Header avec image de fond
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary,
+                  AppColors.primaryDark,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Annonces',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.notifications_active,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Restez informé des actualités de votre ville',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Barre de recherche
+                    Container(
                       decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: isSelected
-                                ? AppColors.primary
-                                : Colors.transparent,
-                            width: 2,
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Rechercher une annonce...',
+                          hintStyle: TextStyle(color: AppColors.textHint),
+                          prefixIcon:
+                              Icon(Icons.search, color: AppColors.primary),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: Icon(Icons.clear,
+                                      color: AppColors.textHint),
+                                  onPressed: () {
+                                    setState(() {
+                                      _searchQuery = '';
+                                      _searchController.clear();
+                                    });
+                                  },
+                                )
+                              : null,
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 15,
                           ),
                         ),
                       ),
-                      child: Text(
-                        filter,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
-                        ),
-                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  ],
+                ),
+              ),
             ),
           ),
 
-          const SizedBox(height: 8),
+          // Filtres
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: _filters.map((filter) {
+                  final isSelected = _selectedFilter == filter;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: FilterChip(
+                      label: Text(filter),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedFilter = filter;
+                        });
+                      },
+                      backgroundColor: Colors.grey[100],
+                      selectedColor: AppColors.primary.withValues(alpha: 0.1),
+                      labelStyle: TextStyle(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                      checkmarkColor: AppColors.primary,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
 
           // Liste des annonces
           Expanded(
             child: Consumer<AnnouncementProvider>(
               builder: (context, provider, child) {
                 if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
                 }
 
-                if (provider.announcements.isEmpty) {
+                final filteredAnnouncements =
+                    _filterAnnouncements(provider.announcements);
+
+                if (filteredAnnouncements.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.notifications_none,
-                            size: 64, color: Colors.grey),
+                        Icon(
+                          Icons.notifications_none,
+                          size: 80,
+                          color: AppColors.textHint,
+                        ),
                         const SizedBox(height: 16),
                         Text(
-                          'Aucune annonce',
-                          style: TextStyle(color: Colors.grey),
+                          _searchQuery.isEmpty
+                              ? 'Aucune annonce disponible'
+                              : 'Aucun résultat pour "$_searchQuery"',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                        if (isAdmin) ...[
+                        if (_searchQuery.isNotEmpty) ...[
                           const SizedBox(height: 8),
-                          Text(
-                            'Appuyez sur le bouton + pour ajouter une annonce',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _searchQuery = '';
+                                _searchController.clear();
+                              });
+                            },
+                            child: const Text('Effacer la recherche'),
                           ),
                         ],
                       ],
@@ -277,116 +411,24 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: provider.announcements.length,
+                  itemCount: filteredAnnouncements.length,
                   itemBuilder: (context, index) {
-                    final announcement = provider.announcements[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/announcement-detail',
-                            arguments: announcement,
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (announcement.isUrgent)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        AppColors.error.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'URGENT',
-                                    style: TextStyle(
-                                      color: AppColors.error,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      announcement.title,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    announcement.formattedDate,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textHint,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                announcement.content,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.access_time,
-                                    size: 12,
-                                    color: AppColors.textHint,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Publié il y a ${DateTime.now().difference(announcement.publishedAt).inHours} heures',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.textHint,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Icon(
-                                    Icons.business_center,
-                                    size: 12,
-                                    color: AppColors.textHint,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      announcement.publishedBy.fullName,
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: AppColors.textHint,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                    final announcement = filteredAnnouncements[index];
+                    return FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.1),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: _animationController,
+                          curve: Interval(
+                            index / filteredAnnouncements.length,
+                            1.0,
+                            curve: Curves.easeOut,
                           ),
-                        ),
+                        )),
+                        child: _buildAnnouncementCard(announcement),
                       ),
                     );
                   },
@@ -396,7 +438,6 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
           ),
         ],
       ),
-      // Bouton flottant pour ajouter une annonce (admin seulement)
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
               onPressed: _showAddAnnouncementDialog,
@@ -407,5 +448,231 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  Widget _buildAnnouncementCard(AnnouncementModel announcement) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/announcement-detail',
+            arguments: announcement,
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: announcement.isUrgent
+                ? Border.all(color: AppColors.error, width: 1.5)
+                : null,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // En-tête avec catégorie et date
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: announcement.isUrgent
+                            ? AppColors.error.withValues(alpha: 0.1)
+                            : AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            announcement.isUrgent
+                                ? Icons.warning_amber_rounded
+                                : Icons.campaign,
+                            size: 14,
+                            color: announcement.isUrgent
+                                ? AppColors.error
+                                : AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            announcement.isUrgent ? 'URGENT' : 'Information',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: announcement.isUrgent
+                                  ? AppColors.error
+                                  : AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      announcement.formattedDate,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Contenu
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      announcement.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      announcement.content,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.4,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Métadonnées
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: AppColors.textHint,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _getTimeAgo(announcement.publishedAt),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textHint,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.visibility,
+                          size: 14,
+                          color: AppColors.textHint,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${announcement.viewCount} vues',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textHint,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Icon(
+                          Icons.favorite_border,
+                          size: 14,
+                          color: AppColors.textHint,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${announcement.likeCount}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textHint,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Divider et bouton "Lire la suite"
+              const Divider(height: 1),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 12,
+                          backgroundColor:
+                              AppColors.primary.withValues(alpha: 0.1),
+                          child: Text(
+                            announcement.publishedBy.initials,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          announcement.publishedBy.fullName,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/announcement-detail',
+                          arguments: announcement,
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      child: const Text('Lire la suite'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getTimeAgo(DateTime date) {
+    final difference = DateTime.now().difference(date);
+    if (difference.inDays > 7) return 'Il y a ${difference.inDays} jours';
+    if (difference.inDays > 0)
+      return 'Il y a ${difference.inDays} jour${difference.inDays > 1 ? 's' : ''}';
+    if (difference.inHours > 0)
+      return 'Il y a ${difference.inHours} heure${difference.inHours > 1 ? 's' : ''}';
+    if (difference.inMinutes > 0)
+      return 'Il y a ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''}';
+    return 'À l\'instant';
   }
 }
