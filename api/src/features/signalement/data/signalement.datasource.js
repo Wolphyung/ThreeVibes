@@ -1,40 +1,64 @@
 const db = require('../../../core/database/db');
 const pjService = require('../../piece-jointe/domain/pj.service');
+const notificationService = require('../../notifications/notification.service');
 
 class SignalementDatasource {
 
   generateNextCode(lastCode) {
-    if (!lastCode) return 'S0001';
-    const currentNumber = parseInt(lastCode.replace('S', ''), 10);
-    const nextNumber = currentNumber + 1;
-    return `S${nextNumber.toString().padStart(4, '0')}`;
+  if (!lastCode) return 'S0001';
+  const currentNumber = parseInt(lastCode.replace('S', ''), 10);
+  const nextNumber = currentNumber + 1;
+  if (nextNumber > 9999) {
+    throw new Error("Maximum code limit reached (S9999)");
   }
+  return `S${nextNumber.toString().padStart(4, '0')}`;
+}
 
-  // CREATE
+
   async createSignalement(signalement, PJs, fonctions) {
+    // 1. Generate the unique code (S0001 format)
     const lastCodeResult = await db.query('SELECT codeSignalement FROM SIGNALEMENT ORDER BY codeSignalement DESC LIMIT 1');
     const lastCode = lastCodeResult.rows[0]?.codesignalement;
     const newCode = this.generateNextCode(lastCode);
 
+    // 2. Insert the main signalement
     const query = 'INSERT INTO SIGNALEMENT (codeSignalement, typeSignalement, description, dateSignalement, latitude, longitude, codeUtilisateur) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
     const result = await db.query(query, [newCode, signalement.typeSignalement, signalement.description, signalement.dateSignalement, signalement.latitude, signalement.longitude, signalement.codeUtilisateur]);
+    
+    const createdSignalement = result.rows[0];
 
+    // 3. Handle Attachments (PJs)
     const links = await pjService.uploadMultiple(PJs);
-
     await Promise.all(links.map(async (link) => {
-      await pjService.linkToSignalement(result.rows[0].codesignalement, link.url);
+        await pjService.linkToSignalement(createdSignalement.codesignalement, link.url);
     }));
-    let specialisations = []
+
+    // 4. Handle Specialisations (Fonctions)
+    let specialisations = [];
     if (fonctions && fonctions.length > 0) {
-      specialisations = fonctions.split(',');
-      await Promise.all(specialisations.map(async (codeFonction) => {
-        await this.addSpecialisation(newCode, codeFonction);
-      }));
+        // If it's a string from a form-data, split it; if it's already an array, use it
+        specialisations = typeof fonctions === 'string' ? fonctions.split(',') : fonctions;
+        
+        await Promise.all(specialisations.map(async (codeFonction) => {
+            await this.addSpecialisation(newCode, codeFonction.trim());
+        }));
+
+        // --- THE NOTIFICATION STEP ---
+        // We notify all the "fonctions" (roles) assigned to this signalement
+        try {
+            await notificationService.notifyNewSignalement(createdSignalement, specialisations);
+        } catch (socketError) {
+            console.error("Socket notification failed, but signalement was created:", socketError);
+            // We don't block the whole process if the notification fails
+        }
     }
 
-    return { signalement: result.rows[0], PJ: links, fonctions: specialisations };
-  }
-
+    return { 
+        signalement: createdSignalement, 
+        PJ: links, 
+        fonctions: specialisations 
+    };
+}
   // READ ALL
   async getAllSignalements() {
     const result = await db.query('SELECT * FROM SIGNALEMENT ORDER BY dateSignalement DESC');
