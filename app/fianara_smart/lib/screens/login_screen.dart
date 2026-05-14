@@ -18,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _isPasswordVisible = false;
-  bool _isLoginMode = true;
 
   @override
   void dispose() {
@@ -27,23 +26,14 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleAuth() async {
+  Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    bool success;
-
-    if (_isLoginMode) {
-      success = await authProvider.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-    } else {
-      success = await authProvider.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-    }
+    final success = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
 
     if (success && mounted) {
       Navigator.pushReplacement(
@@ -53,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Erreur'),
+          content: Text(authProvider.errorMessage ?? 'Erreur de connexion'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -97,9 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _isLoginMode
-                          ? 'Connectez-vous à votre compte'
-                          : 'Créez votre compte',
+                      'Connectez-vous à votre compte',
                       style: TextStyle(
                         fontSize: 16,
                         color: AppColors.textSecondary,
@@ -109,15 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildAuthTab('Connexion', true),
-                  const SizedBox(width: 32),
-                  _buildAuthTab('Inscription', false),
-                ],
-              ),
-              const SizedBox(height: 32),
               Form(
                 key: _formKey,
                 child: Column(
@@ -162,22 +141,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Veuillez entrer votre mot de passe';
                         }
+                        if (value.length < 6) {
+                          return 'Mot de passe trop court (min 6 caractères)';
+                        }
                         return null;
                       },
                     ),
                   ],
                 ),
               ),
-              if (_isLoginMode) ...[
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {},
-                    child: const Text('Mot de passe oublié ?'),
-                  ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {},
+                  child: const Text('Mot de passe oublié ?'),
                 ),
-              ],
+              ),
               const SizedBox(height: 32),
               Consumer<AuthProvider>(
                 builder: (context, authProvider, child) {
@@ -185,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: authProvider.isLoading ? null : _handleAuth,
+                      onPressed: authProvider.isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                       ),
@@ -198,101 +178,44 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.white,
                               ),
                             )
-                          : Text(_isLoginMode ? 'Se connecter' : 'S\'inscrire'),
+                          : const Text('SE CONNECTER'),
                     ),
                   );
                 },
               ),
               const SizedBox(height: 24),
-              const Row(
-                children: [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('OU CONTINUER AVEC'),
-                  ),
-                  Expanded(child: Divider()),
-                ],
-              ),
-              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 140,
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.g_mobiledata),
-                      label: const Text('Google'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
+                  Text(
+                    'Pas encore de compte ? ',
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
-                  const SizedBox(width: 16),
-                  SizedBox(
-                    width: 140,
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.facebook),
-                      label: const Text('Facebook'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const RegisterScreen()),
+                      );
+                    },
+                    child: const Text('S\'inscrire'),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              if (!_isLoginMode)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Déjà un compte ? ',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _isLoginMode = true;
-                        });
-                      },
-                      child: const Text('Se connecter'),
-                    ),
-                  ],
+              Center(
+                child: Text(
+                  'Version 1.0.0',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textHint,
+                  ),
                 ),
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAuthTab(String title, bool isActive) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isLoginMode = isActive;
-        });
-      },
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive ? AppColors.primary : AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            height: 2,
-            width: 50,
-            color: isActive ? AppColors.primary : Colors.transparent,
-          ),
-        ],
       ),
     );
   }

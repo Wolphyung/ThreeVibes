@@ -69,10 +69,13 @@ class AnnouncementDetailScreen extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  announcement.publishedBy.fullName,
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
+                Expanded(
+                  child: Text(
+                    announcement.publishedBy.fullName,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -101,49 +104,19 @@ class AnnouncementDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildActionButton(
-                  icon: Icons.thumb_up_outlined,
-                  label: '${announcement.likeCount} J\'aime',
-                  onTap: () {},
+            // Bouton Partager uniquement
+            Center(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  // TODO: Implémenter le partage
+                },
+                icon: const Icon(Icons.share_outlined),
+                label: const Text('Partager'),
+                style: OutlinedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                _buildActionButton(
-                  icon: Icons.share_outlined,
-                  label: 'Partager',
-                  onTap: () {},
-                ),
-                _buildActionButton(
-                  icon: Icons.bookmark_outline,
-                  label: 'Enregistrer',
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(30),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.primary),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12),
+              ),
             ),
           ],
         ),

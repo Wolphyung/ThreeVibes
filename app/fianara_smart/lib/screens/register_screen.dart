@@ -14,13 +14,17 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  // Contrôleurs pour tous les champs du MCD
   final _nomController = TextEditingController();
   final _prenomsController = TextEditingController();
+  final _numCINController = TextEditingController();
+  final _dateCINController = TextEditingController();
+  final _lieuCINController = TextEditingController();
+  final _adresseController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _adresseController = TextEditingController();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -29,11 +33,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _nomController.dispose();
     _prenomsController.dispose();
+    _numCINController.dispose();
+    _dateCINController.dispose();
+    _lieuCINController.dispose();
+    _adresseController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _phoneController.dispose();
-    _adresseController.dispose();
     super.dispose();
   }
 
@@ -54,12 +61,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       id: '',
       nom: _nomController.text,
       prenoms: _prenomsController.text,
-      numCIN: '',
+      numCIN: _numCINController.text,
       dateCIN: DateTime.now(),
-      lieuCIN: '',
+      lieuCIN: _lieuCINController.text,
       adresse: _adresseController.text,
       role: UserRole.citizen,
-      codeUtilisateur: '',
+      codeUtilisateur: 'CIT_${DateTime.now().millisecondsSinceEpoch}',
       email: _emailController.text,
       phoneNumber: _phoneController.text,
       createdAt: DateTime.now(),
@@ -94,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
             child: Column(
@@ -109,11 +116,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'Créez votre compte pour signaler des problèmes',
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+
+                // Nom (obligatoire)
                 TextFormField(
                   controller: _nomController,
                   decoration: const InputDecoration(
-                    labelText: 'Nom',
+                    labelText: 'Nom *',
+                    hintText: 'Votre nom',
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                   validator: (value) {
@@ -123,11 +133,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Prénoms (obligatoire)
                 TextFormField(
                   controller: _prenomsController,
                   decoration: const InputDecoration(
-                    labelText: 'Prénoms',
+                    labelText: 'Prénoms *',
+                    hintText: 'Vos prénoms',
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                   validator: (value) {
@@ -137,12 +150,67 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Numéro CIN
+                TextFormField(
+                  controller: _numCINController,
+                  decoration: const InputDecoration(
+                    labelText: 'Numéro CIN',
+                    hintText: 'Ex: 10123456789',
+                    prefixIcon: Icon(Icons.credit_card_outlined),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 12),
+
+                // Date CIN - TextField manuel
+                TextFormField(
+                  controller: _dateCINController,
+                  decoration: const InputDecoration(
+                    labelText: 'Date de délivrance CIN',
+                    hintText: 'Ex: 15/05/2020',
+                    prefixIcon: Icon(Icons.calendar_today),
+                  ),
+                  keyboardType: TextInputType.datetime,
+                  onChanged: (value) {
+                    // Validation simple du format
+                    if (value.isNotEmpty && value.length == 10) {
+                      // Format JJ/MM/AAAA
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+
+                // Lieu CIN
+                TextFormField(
+                  controller: _lieuCINController,
+                  decoration: const InputDecoration(
+                    labelText: 'Lieu de délivrance CIN',
+                    hintText: 'Ex: Fianarantsoa',
+                    prefixIcon: Icon(Icons.location_city),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Adresse
+                TextFormField(
+                  controller: _adresseController,
+                  decoration: const InputDecoration(
+                    labelText: 'Adresse',
+                    hintText: 'Votre adresse complète',
+                    prefixIcon: Icon(Icons.home_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Email (obligatoire)
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
-                    labelText: 'Email',
+                    labelText: 'Email *',
+                    hintText: 'votre@email.com',
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   validator: (value) {
@@ -155,29 +223,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Téléphone
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: const InputDecoration(
                     labelText: 'Téléphone',
+                    hintText: 'Ex: +261 34 12 345 67',
                     prefixIcon: Icon(Icons.phone_outlined),
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _adresseController,
-                  decoration: const InputDecoration(
-                    labelText: 'Adresse',
-                    prefixIcon: Icon(Icons.home_outlined),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Mot de passe (obligatoire)
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
-                    labelText: 'Mot de passe',
+                    labelText: 'Mot de passe *',
+                    hintText: 'Minimum 6 caractères',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -202,12 +268,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Confirmation mot de passe
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: !_isConfirmPasswordVisible,
                   decoration: InputDecoration(
-                    labelText: 'Confirmer le mot de passe',
+                    labelText: 'Confirmer le mot de passe *',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -230,26 +298,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+
+                // Champ obligatoire
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline,
+                          size: 14, color: AppColors.textHint),
+                      const SizedBox(width: 8),
+                      Text(
+                        '* Champs obligatoires',
+                        style:
+                            TextStyle(fontSize: 12, color: AppColors.textHint),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Bouton d'inscription
                 Consumer<AuthProvider>(
                   builder: (context, authProvider, child) {
-                    return ElevatedButton(
-                      onPressed:
-                          authProvider.isLoading ? null : _handleRegister,
-                      child: authProvider.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('S\'INSCRIRE'),
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed:
+                            authProvider.isLoading ? null : _handleRegister,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                        ),
+                        child: authProvider.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('S\'INSCRIRE'),
+                      ),
                     );
                   },
                 ),
                 const SizedBox(height: 16),
+
+                // Lien vers connexion
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -265,6 +363,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
