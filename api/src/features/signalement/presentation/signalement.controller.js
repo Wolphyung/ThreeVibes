@@ -140,6 +140,55 @@ class SignalementController {
       res.status(500).json({ error: error.message });
     }
   }
+  // ==========================================
+  // SUIVI
+  // ==========================================
+
+  // POST /api/signalements/:code/suivi
+  async follow(req, res) {
+    try {
+      const { code } = req.params;
+      const { codeUtilisateur, etatSuivi } = req.body;
+      if (!codeUtilisateur) {
+        return res.status(400).json({ error: 'codeUtilisateur is required' });
+      }
+      const result = await SignalementService.followSignalement(code, codeUtilisateur, etatSuivi);
+      res.status(201).json({
+        message: 'Suivi created successfully',
+        data: result
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // DELETE /api/signalements/:code/suivi/:codeUtilisateur
+  async unfollow(req, res) {
+    try {
+      const { code, codeUtilisateur } = req.params;
+      const result = await SignalementService.unfollowSignalement(code, codeUtilisateur);
+      res.status(200).json({
+        message: 'Suivi removed successfully',
+        data: result
+      });
+    } catch (error) {
+      if (error.message === 'Suivi not found') {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  // GET /api/signalements/suivi/:codeUtilisateur
+  async getSuiviByUser(req, res) {
+    try {
+      const { codeUtilisateur } = req.params;
+      const result = await SignalementService.getSignalementsSuivis(codeUtilisateur);
+      res.status(200).json({ data: result });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new SignalementController();

@@ -227,3 +227,82 @@
  *       404:
  *         description: Specialisation not found
  */
+
+/**
+ * @swagger
+ * /signalements/suivi/{codeUtilisateur}:
+ *   get:
+ *     tags: [Suivi]
+ *     summary: Get all signalements followed by a user
+ *     parameters:
+ *       - in: path
+ *         name: codeUtilisateur
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User code (e.g. U0001)
+ *     responses:
+ *       200:
+ *         description: List of signalements followed by the user (with etatSuivi)
+ */
+
+/**
+ * @swagger
+ * /signalements/{code}/suivi:
+ *   post:
+ *     tags: [Suivi]
+ *     summary: Follow a signalement (start tracking)
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Signalement code (e.g. S0001)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - codeUtilisateur
+ *             properties:
+ *               codeUtilisateur:
+ *                 type: string
+ *                 description: User code (e.g. U0001)
+ *               etatSuivi:
+ *                 type: string
+ *                 description: Status (defaults to "En traitement")
+ *     responses:
+ *       201:
+ *         description: Suivi created successfully
+ *       400:
+ *         description: codeUtilisateur is required
+ */
+
+/**
+ * @swagger
+ * /signalements/{code}/suivi/{codeUtilisateur}:
+ *   delete:
+ *     tags: [Suivi]
+ *     summary: Unfollow a signalement (stop tracking)
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Signalement code (e.g. S0001)
+ *       - in: path
+ *         name: codeUtilisateur
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User code (e.g. U0001)
+ *     responses:
+ *       200:
+ *         description: Suivi removed successfully
+ *       404:
+ *         description: Suivi not found
+ */

@@ -1,4 +1,5 @@
 const signalementDatasource = require('../data/signalement.datasource');
+const notificationService = require('../../notifications/notification.service');
 
 class SignalementService {
   async createSignalement(signalement, PJs, fonctions) {
@@ -8,7 +9,18 @@ class SignalementService {
     if (!PJs || PJs.length === 0) {
       throw new Error('No PJs provided');
     }
-    return await signalementDatasource.createSignalement(signalement, PJs, fonctions);
+    const result = await signalementDatasource.createSignalement(signalement, PJs, fonctions);
+
+    // Notify users of the assigned fonctions
+    if (result.fonctions && result.fonctions.length > 0) {
+      try {
+        await notificationService.notifyNewSignalement(result.signalement, result.fonctions);
+      } catch (err) {
+        console.error('Notification error (non-blocking):', err.message);
+      }
+    }
+
+    return result;
   }
 
   async getAllSignalements() {
@@ -61,6 +73,26 @@ class SignalementService {
 
   async getSignalementsByFonction(codeFonction) {
     return await signalementDatasource.getSignalementsByFonction(codeFonction);
+  }
+
+  // ==========================================
+  // SUIVI
+  // ==========================================
+
+  async followSignalement(codeSignalement, codeUtilisateur, stateSuivi) {
+    return await signalementDatasource.followSignalement(codeSignalement, codeUtilisateur, stateSuivi);
+  }
+
+  async  unfollowSignalement(codeSignalement, codeUtilisateur) {
+    const result = await signalementDatasource.unfollowSignalement(codeSignalement, codeUtilisateur);
+    if (!result) {
+      throw new Error('Suivi not found');
+    }
+    return result;
+  }
+
+  async getSignalementsSuivis(codeUtilisateur) {
+    return await signalementDatasource.getSignalementsSuivis(codeUtilisateur);
   }
 }
 

@@ -126,6 +126,37 @@ class SignalementDatasource {
     const result = await db.query(query, [codeFonction]);
     return result.rows;
   }
+
+  // ==========================================
+  // SUIVRE (Utilisateur ↔ Signalement)
+  // ==========================================
+
+  // Assign a utilisateur to a signalement
+  async followSignalement(codeSignalement, codeUtilisateur, stateSuivi) {
+    const query = 'INSERT INTO SUIVRE (CODESIGNALEMENT, CODEUTILISATEUR, ETATSUIVI, DATESUIVI) VALUES ($1, $2, $3, $4) RETURNING *';
+    const result = await db.query(query, [codeSignalement, codeUtilisateur, stateSuivi || "En traitement", new Date()]);
+    return result.rows[0];
+  }
+  
+
+
+  // Remove a utilisateur from a signalement
+  async unfollowSignalement(codeSignalement, codeUtilisateur) {
+    const query = 'DELETE FROM SUIVRE WHERE CODESIGNALEMENT = $1 AND CODEUTILISATEUR = $2 RETURNING *';
+    const result = await db.query(query, [codeSignalement, codeUtilisateur]);
+    return result.rows[0];
+  }
+
+  // Get all fonctions assigned to a signalement
+  async getSignalementsSuivis(codeUtilisateur) {
+    const query = `SELECT SIG.*, S.ETATSUIVI 
+      FROM SUIVRE S 
+      JOIN SIGNALEMENT SIG ON S.CODESIGNALEMENT = SIG.CODESIGNALEMENT 
+      WHERE S.CODEUTILISATEUR = $1`;
+    const result = await db.query(query, [codeUtilisateur]);
+    return result.rows;
+  }
 }
+
 
 module.exports = new SignalementDatasource();
