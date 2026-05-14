@@ -7,80 +7,67 @@ const chat = async (userMessage, codedossier = null) => {
   const tavilyClient = tavily({ apiKey: process.env.TAVILY_API_KEY });
 
   let context = '';
-  let source = '';
+  let source = 'connaissances générales'; // Source par défaut
 
-  // 1. Cherche dans la DB d'abord
+  // 1. Priorité : Recherche d'un dossier PRÉCIS en DB
   if (codedossier) {
     const dossier = await repo.findDossierByCode(codedossier);
     if (dossier) {
       context = `Dossier : ${dossier.nomdossier}\nInstructions : ${dossier.instructions}`;
       source = 'base de données';
     }
-  } else {
-    const dossiers = await repo.findAllDossiers();
-    if (dossiers.length > 0) {
-      context = dossiers.map(d =>
-        `Dossier "${d.nomdossier}" (${d.codedossier}): ${d.instructions}`
-      ).join('\n');
-      source = 'base de données';
-    }
   }
 
-if (!context) {
+  // 2. Si aucun dossier précis n'est trouvé (ou si codedossier est nul), on va sur INTERNET
+  if (!context) {
     try {
       const searchResult = await tavilyClient.search(userMessage, {
         searchDepth: 'advanced',
         includeDomains: ['torolalana.gov.mg'],
         maxResults: 5
       });
-      if (searchResult.results.length > 0) {
-        context = searchResult.results.map(r =>
-          `Source: ${r.url}\n${r.content}`
-        ).join('\n\n');
-        source = 'internet (torolalana.gov.mg)';
+
+      if (searchResult.results && searchResult.results.length > 0) {
+        context = searchResult.results.map(r => `Source: ${r.url}\n${r.content}`).join('\n\n');
+        // On récupère l'URL du premier résultat pour être plus précis
+        source = `internet (${searchResult.results[0].url})`;
       }
     } catch (err) {
       console.error('Tavily error:', err.message);
     }
   }
 
-  // 3. Fallback recherche générale
+  // 3. Fallback : Recherche générale si toujours rien
   if (!context) {
     try {
       const searchResult = await tavilyClient.search(
         `dossier administratif Madagascar ${userMessage}`,
         { searchDepth: 'basic', maxResults: 3 }
       );
-      if (searchResult.results.length > 0) {
-        context = searchResult.results.map(r =>
-          `Source: ${r.url}\n${r.content}`
-        ).join('\n\n');
+      if (searchResult.results && searchResult.results.length > 0) {
+        context = searchResult.results.map(r => `Source: ${r.url}\n${r.content}`).join('\n\n');
         source = 'internet (recherche générale)';
       }
     } catch (err) {
       console.error('Tavily fallback error:', err.message);
     }
   }
-  // 4. Groq synthétise
+
+  // 4. Synthèse finale
   const result = await client.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     messages: [
       {
         role: 'system',
-        content: `Tu es un assistant administratif spécialisé dans la préparation 
-        de dossiers administratifs et publics à Madagascar. 
-        Réponds toujours en français, de manière claire et précise.
-        Aide l'utilisateur à comprendre les documents requis et les étapes à suivre.
+        content: `Tu es un assistant administratif expert à Madagascar.
+        Source actuelle des données : ${source}
         
-        Informations disponibles (source: ${source}) :
-        ${context || "Aucune information spécifique trouvée. Réponds avec tes connaissances générales."}
+        Contexte :
+        ${context || "Utilise tes connaissances générales sur l'administration malgache."}
         
-        Si la question sort du cadre administratif, redirige poliment l'utilisateur.`
+        Réponds toujours en français.`
       },
-      {
-        role: 'user',
-        content: userMessage
-      }
+      { role: 'user', content: userMessage }
     ],
     max_tokens: 1024,
     temperature: 0.7
@@ -88,7 +75,7 @@ if (!context) {
 
   return {
     response: result.choices[0].message.content,
-    source
+    source: source // Retourne la source finale mise à jour
   };
 };
 
