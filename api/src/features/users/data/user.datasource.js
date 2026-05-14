@@ -38,4 +38,28 @@ const update = (id, user) =>
 const remove = (id) =>
   db.query('DELETE FROM utilisateur WHERE codeutilisateur = $1 RETURNING *', [id]);
 
-module.exports = { findByEmail, findById, create, update, remove };
+//cas de mdp oublié
+const saveResetToken = (email, token, expires) => {
+  return db.query(
+    'UPDATE utilisateur SET reset_token = $1, reset_expires = $2 WHERE email = $3',
+    [token, expires, email]
+  );
+};
+
+const findByResetToken = (token) => {
+  // On cherche l'user dont le token correspond et n'est pas encore expiré
+  return db.query(
+    'SELECT * FROM utilisateur WHERE reset_token = $1 AND reset_expires > NOW()',
+    [token]
+  );
+};
+
+const updatePassword = (id, newHashedPassword) => {
+  return db.query(
+    'UPDATE utilisateur SET mdp = $1, reset_token = NULL, reset_expires = NULL WHERE codeutilisateur = $2',
+    [newHashedPassword, id]
+  );
+};
+
+
+module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword };
