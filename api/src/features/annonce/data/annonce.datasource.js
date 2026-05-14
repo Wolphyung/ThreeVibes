@@ -18,6 +18,23 @@ class AnnonceDatasource {
     return `AN${nextNumber.toString().padStart(3, "0")}`;
   }
 
+  async generateCodeCategorie() {
+    // On cherche le code le plus élevé au lieu de compter
+    const query =
+      'SELECT "codeCategorie" FROM public.categorie ORDER BY "codeCategorie" DESC LIMIT 1';
+    const result = await db.query(query);
+
+    let nextNumber = 1;
+    if (result.rows.length > 0) {
+      // On extrait le nombre du code (ex: "AN005" -> 5) et on ajoute 1
+      const lastCode = result.rows[0].codeAnnonce;
+      const lastNumber = parseInt(lastCode.replace("AN", ""));
+      nextNumber = lastNumber + 1;
+    }
+
+    return `AN${nextNumber.toString().padStart(3, "0")}`;
+  }
+
   create = async (data) => {
     const codeAnnonce = await this.generateCode();
     const query = `
@@ -86,6 +103,32 @@ class AnnonceDatasource {
     const query =
       "INSERT INTO public.pjannonce (codeannonce, lien) VALUES ($1, $2) RETURNING *";
     const result = await db.query(query, [codeAnnonce, lien]);
+    return result.rows[0];
+  }
+
+  async getAllCategories() {
+    const query = 'SELECT * FROM public.categorie ORDER BY nomcategorie ASC';
+    const result = await db.query(query);
+    return result.rows;
+  }
+
+  async updateCategorie(code, data) {
+    const query = `
+      UPDATE public.categorie 
+      SET nomcategorie = $1 
+      WHERE codecategorie = $2 RETURNING *`;
+    const values = [data.nomcategorie, code];
+    const result = await db.query(query, values);
+    return result.rows[0];
+  }
+
+  async createCategorie(data) {
+    const codeCategorie = await this.generateCodeCategorie();
+    const query = `
+      INSERT INTO public.categorie (codecategorie, nomcategorie) 
+      VALUES ($1, $2) RETURNING *`;
+    const values = [codeCategorie, data.nomcategorie];
+    const result = await db.query(query, values);
     return result.rows[0];
   }
 }

@@ -1,4 +1,5 @@
 const notificationService = require('../../notifications/notification.service');
+const annonceService = require('../../annonce/domain/annonce.service');
 
 class SimulationController {
   /**
@@ -24,6 +25,11 @@ class SimulationController {
         message: alertMessage,
         data: alertData,
         isSimulated: true
+      });
+
+      annonceService.createAnnonce({
+        codeCategorie: "METEO",
+        contenu: alertMessage,
       });
 
       res.status(200).json({

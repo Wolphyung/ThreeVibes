@@ -13,4 +13,9 @@ router.put("/:id", AnnonceController.update);
 router.post("/", upload.array("files", 5), AnnonceController.create);
 router.delete("/:id", AnnonceController.remove);
 
+router.get("/categories", AnnonceController.listCategories);
+router.put("/categories/:id", AnnonceController.updateCategorie);
+router.post("/categories", AnnonceController.createCategorie);
+// router.delete("/categories/:id", AnnonceController.removeCategorie);
+
 module.exports = router;

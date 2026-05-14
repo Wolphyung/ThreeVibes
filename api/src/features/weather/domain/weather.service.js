@@ -1,6 +1,8 @@
 const axios = require('axios');
 const cron = require('node-cron');
 const notificationService = require('../../notifications/notification.service');
+const annonceService = require('../../annonce/domain/annonce.service');
+
 
 class WeatherService {
   constructor() {
@@ -70,6 +72,11 @@ class WeatherService {
             precipitation: precipitation,
             weatherCode: weather_code
           }
+        });
+
+        annonceService.createAnnonce({
+          codeCategorie: "METEO",
+          contenu: alertMessage,
         });
       } else {
         console.log(`Weather check for Fianarantsoa: OK (${temperature_2m}°C, Wind: ${wind_speed_10m} km/h)`);

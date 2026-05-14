@@ -43,6 +43,22 @@ class AnnonceService {
     // 3. Supprimer l'annonce elle-même
     return await AnnonceDatasource.delete(id);
   }
+
+  listCategories = async () => {
+    return await AnnonceDatasource.getAllCategories();
+  };
+
+  updateCategorie = async (id, data) => {
+    return await AnnonceDatasource.updateCategorie(id, data);
+  };
+
+  createCategorie = async (data) => {
+    return await AnnonceDatasource.createCategorie(data);
+  };
+
+  deleteCategorie = async (id) => {
+    return await AnnonceDatasource.deleteCategorie(id);
+  };
 }
 
 module.exports = new AnnonceService();

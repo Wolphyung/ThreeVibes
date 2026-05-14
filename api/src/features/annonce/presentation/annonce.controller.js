@@ -43,6 +43,33 @@ class AnnonceController {
       res.status(500).json({ error: error.message });
     }
   };
+
+  listCategories = async (req, res) => {
+    try {
+      const categories = await AnnonceService.listCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  updateCategorie = async (req, res) => {
+    try {
+      const result = await AnnonceService.updateCategorie(req.params.id, req.body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  createCategorie = async (req, res) => {
+    try {
+      const result = await AnnonceService.createCategorie(req.body);
+      res.status(201).json(result);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 }
 
 module.exports = new AnnonceController();
