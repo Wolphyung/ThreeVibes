@@ -38,7 +38,10 @@ class UserModel {
     this.updatedAt,
     this.isActive = true,
     this.token,
+    this.codeFonction,
   });
+
+  final String? codeFonction;
 
   String get fullName => '$nom $prenoms';
 
@@ -89,6 +92,7 @@ class UserModel {
           : null,
       isActive: json['isActive'] ?? true,
       token: json['token']?.toString(),
+      codeFonction: json['codeFonction']?.toString() ?? json['codefonction']?.toString(),
     );
   }
 
