@@ -30,7 +30,7 @@ class AdminProvider extends ChangeNotifier {
         dateCIN: DateTime.now(),
         lieuCIN: 'Antananarivo',
         adresse: '123 Rue Principale',
-        role: UserRole.citoyen,
+        role: UserRole.citizen,
         email: 'jean@example.com',
         phoneNumber: '0341234567',
         createdAt: DateTime.now(),
@@ -45,7 +45,7 @@ class AdminProvider extends ChangeNotifier {
         dateCIN: DateTime.now(),
         lieuCIN: 'Antananarivo',
         adresse: '456 Avenue Centrale',
-        role: UserRole.technicien,
+        role: UserRole.technician,
         email: 'marie@example.com',
         phoneNumber: '0347654321',
         createdAt: DateTime.now(),
@@ -120,9 +120,9 @@ class AdminProvider extends ChangeNotifier {
     switch (role) {
       case UserRole.admin:
         return Colors.red;
-      case UserRole.technicien:
+      case UserRole.technician:
         return Colors.orange;
-      case UserRole.citoyen:
+      case UserRole.citizen:
         return Colors.blue;
     }
   }
@@ -132,9 +132,9 @@ class AdminProvider extends ChangeNotifier {
     switch (role) {
       case UserRole.admin:
         return 'Administrateur';
-      case UserRole.technicien:
+      case UserRole.technician:
         return 'Technicien';
-      case UserRole.citoyen:
+      case UserRole.citizen:
         return 'Citoyen';
     }
   }

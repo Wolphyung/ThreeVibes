@@ -225,6 +225,17 @@ class DashboardScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildActionButton(
+                            icon: Icons.description_outlined,
+                            label: 'Dossiers',
+                            color: AppColors.primary,
+                            onTap: () {
+                              Navigator.pushNamed(context, '/dossiers');
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildActionButton(
                             icon: Icons.map_outlined,
                             label: 'Carte',
                             color: AppColors.primary,

@@ -15,7 +15,6 @@ class AppTheme {
     ),
 
     // Typography
-    fontFamily: GoogleFonts.inter().fontFamily,
     textTheme: GoogleFonts.interTextTheme(
       const TextTheme(
         displayLarge: TextStyle(
@@ -184,7 +183,6 @@ class AppTheme {
       error: AppColors.error,
       surface: Color(0xFF1E293B),
     ),
-    fontFamily: GoogleFonts.inter().fontFamily,
     textTheme: GoogleFonts.interTextTheme(
       const TextTheme(
         bodyLarge: TextStyle(fontSize: 16, color: Color(0xFFF1F5F9)),

@@ -27,4 +27,10 @@ class ApiConfig {
   // Endpoints Météo
   static const String currentWeather = '/weather/current';
   static const String forecastWeather = '/weather/forecast';
+
+  // Endpoints Chatbot
+  static const String chatbotChat = '/chatbot/chat';
+
+  // Endpoints Instruction Dossier
+  static const String instructionDossiers = '/dossiers';
 }

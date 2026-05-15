@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../services/chat_service.dart';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -43,46 +44,41 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     _simulateResponse(userMessage);
   }
 
-  void _simulateResponse(String userMessage) {
+  void _simulateResponse(String userMessage) async {
     setState(() {
       _isTyping = true;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
-      String response = _getResponse(userMessage);
-      setState(() {
-        _messages.add({
-          'isUser': false,
-          'message': response,
-          'time': DateTime.now(),
+    try {
+      final result = await ChatService.sendMessage(userMessage);
+      
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'isUser': false,
+            'message': result['reponse'] ?? 'Désolé, je ne peux pas répondre pour le moment.',
+            'source': result['source'],
+            'time': DateTime.now(),
+          });
+          _isTyping = false;
+          _scrollToBottom();
         });
-        _isTyping = false;
-        _scrollToBottom();
-      });
-    });
-  }
-
-  String _getResponse(String message) {
-    final msg = message.toLowerCase();
-
-    if (msg.contains('bonjour') || msg.contains('salut')) {
-      return 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?';
-    } else if (msg.contains('signalement') || msg.contains('probleme')) {
-      return 'Pour signaler un problème, allez dans l\'onglet "Signalements" et cliquez sur le bouton +. Vous pourrez décrire le problème et ajouter une photo.';
-    } else if (msg.contains('annonce') || msg.contains('info')) {
-      return 'Consultez l\'onglet "Annonces" pour voir toutes les actualités et informations importantes de la ville.';
-    } else if (msg.contains('carte') || msg.contains('localisation')) {
-      return 'La carte interactive vous permet de voir tous les signalements près de chez vous. Vous pouvez aussi y ajouter votre position.';
-    } else if (msg.contains('profil') || msg.contains('compte')) {
-      return 'Dans votre profil, vous pouvez modifier vos informations personnelles et voir l\'historique de vos signalements.';
-    } else if (msg.contains('merci')) {
-      return 'Avec plaisir ! N\'hésitez pas si vous avez d\'autres questions.';
-    } else if (msg.contains('aide') || msg.contains('help')) {
-      return 'Voici ce que je peux faire :\n• Vous aider à signaler un problème\n• Vous informer sur les annonces\n• Vous guider sur la carte\n• Répondre à vos questions sur le profil\nQue souhaitez-vous savoir ?';
-    } else {
-      return 'Je n\'ai pas bien compris votre demande. Voici ce que je peux faire :\n• Aide pour les signalements\n• Informations sur les annonces\n• Utilisation de la carte\n• Gestion du profil\nPouvez-vous reformuler votre question ?';
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'isUser': false,
+            'message': 'Une erreur est survenue lors de la communication avec le serveur. Veuillez réessayer plus tard.',
+            'time': DateTime.now(),
+          });
+          _isTyping = false;
+          _scrollToBottom();
+        });
+      }
     }
   }
+
 
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -134,6 +130,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   message: message['message'],
                   isUser: message['isUser'],
                   time: message['time'],
+                  source: message['source'],
                 );
               },
             ),
@@ -193,6 +190,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     required String message,
     required bool isUser,
     required DateTime time,
+    String? source,
   }) {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -220,6 +218,24 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 color: isUser ? Colors.white : AppColors.textPrimary,
               ),
             ),
+            if (source != null && source.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: (isUser ? Colors.white : AppColors.primary).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Source: $source',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontStyle: FontStyle.italic,
+                    color: isUser ? Colors.white70 : AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 4),
             Text(
               '${time.hour}:${time.minute.toString().padLeft(2, '0')}',

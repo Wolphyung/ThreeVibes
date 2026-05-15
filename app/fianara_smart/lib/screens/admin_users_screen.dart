@@ -48,11 +48,18 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     // Filtre par rôle
     if (_selectedRole != 'Tous') {
       filtered = filtered.where((user) {
+<<<<<<< HEAD
         if (_selectedRole == 'Citoyens') return user.role == UserRole.citoyen;
         if (_selectedRole == 'Techniciens') {
           return user.role == UserRole.technicien;
         }
         if (_selectedRole == 'Administrateurs') {
+=======
+        if (_selectedRole == 'Citoyens') return user.role == UserRole.citizen;
+        if (_selectedRole == 'Techniciens')
+          return user.role == UserRole.technician;
+        if (_selectedRole == 'Administrateurs')
+>>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
           return user.role == UserRole.admin;
         }
         return true;
@@ -575,9 +582,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     switch (role) {
       case UserRole.admin:
         return AppColors.error;
-      case UserRole.technicien:
+      case UserRole.technician:
         return AppColors.warning;
-      case UserRole.citoyen:
+      case UserRole.citizen:
         return AppColors.primary;
       default:
         return AppColors.textSecondary;
