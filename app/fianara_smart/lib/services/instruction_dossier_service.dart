@@ -12,7 +12,8 @@ class InstructionDossierService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final List<dynamic> data = responseData['dossiers'] ?? [];
         return data.map((item) => InstructionDossier.fromJson(item)).toList();
       } else {
         throw Exception('Erreur serveur (${response.statusCode})');
@@ -32,7 +33,8 @@ class InstructionDossierService {
       );
 
       if (response.statusCode == 201) {
-        return InstructionDossier.fromJson(json.decode(response.body));
+        final Map<String, dynamic> data = json.decode(response.body);
+        return InstructionDossier.fromJson(data['dossier']);
       } else {
         throw Exception('Erreur serveur (${response.statusCode})');
       }
@@ -51,7 +53,8 @@ class InstructionDossierService {
       );
 
       if (response.statusCode == 200) {
-        return InstructionDossier.fromJson(json.decode(response.body));
+        final Map<String, dynamic> data = json.decode(response.body);
+        return InstructionDossier.fromJson(data['dossier']);
       } else {
         throw Exception('Erreur serveur (${response.statusCode})');
       }

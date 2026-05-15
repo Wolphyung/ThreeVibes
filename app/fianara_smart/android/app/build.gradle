@@ -55,6 +55,11 @@ android {
             signingConfig signingConfigs.debug // Change to release config for production
         }
     }
+    configurations.all {
+        resolutionStrategy {
+            force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.10' // Or your current version
+        }
+    }
 }
 
 flutter {
