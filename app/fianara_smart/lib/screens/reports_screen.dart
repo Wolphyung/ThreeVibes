@@ -189,112 +189,6 @@ class _ReportsScreenState extends State<ReportsScreen>
     final filteredSignalements = _filteredSignalements;
 
     return Scaffold(
-<<<<<<< HEAD
-      body: Column(
-        children: [
-          // Header avec dégradé
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primary,
-                  AppColors.primaryDark,
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Mes Signalements',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.filter_alt_outlined,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Suivez l\'évolution de vos signalements',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Barre de recherche
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          setState(() {
-                            _searchQuery = value;
-                          });
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'Rechercher un signalement...',
-                          hintStyle: const TextStyle(color: AppColors.textHint),
-                          prefixIcon: const Icon(Icons.search,
-                              color: AppColors.primary),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear,
-                                      color: AppColors.textHint),
-                                  onPressed: () {
-                                    setState(() {
-                                      _searchQuery = '';
-                                      _searchController.clear();
-                                    });
-                                  },
-                                )
-                              : null,
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-=======
       body: RefreshIndicator(
         onRefresh: _loadSignalements,
         child: Column(
@@ -489,75 +383,9 @@ class _ReportsScreenState extends State<ReportsScreen>
                 ],
               ),
             ),
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
 
             const SizedBox(height: 8),
 
-<<<<<<< HEAD
-          // Statistiques rapides
-          Consumer<ReportProvider>(
-            builder: (context, provider, child) {
-              final reports = provider.reports;
-              final total = reports.length;
-              final enCours = reports
-                  .where((r) => r.status == ReportStatus.inProgress)
-                  .length;
-              final traites = reports
-                  .where((r) => r.status == ReportStatus.resolved)
-                  .length;
-
-              return Container(
-                color: Colors.white,
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    _buildStatCard('Total', total.toString(),
-                        Icons.report_problem, AppColors.primary),
-                    const SizedBox(width: 8),
-                    _buildStatCard('En cours', enCours.toString(),
-                        Icons.hourglass_empty, AppColors.inProgress),
-                    const SizedBox(width: 8),
-                    _buildStatCard('Traités', traites.toString(),
-                        Icons.check_circle, AppColors.resolved),
-                  ],
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 8),
-
-          // Liste des signalements
-          Expanded(
-            child: Consumer<ReportProvider>(
-              builder: (context, provider, child) {
-                if (provider.isLoading && provider.reports.isEmpty) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-
-                final filteredReports = _filterReports(provider.reports);
-
-                if (filteredReports.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.report_problem_outlined,
-                          size: 80,
-                          color: AppColors.textHint,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchQuery.isEmpty
-                              ? 'Aucun signalement pour le moment'
-                              : 'Aucun résultat pour "$_searchQuery"',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
-=======
             // Liste des signalements
             Expanded(
               child: _isLoading
@@ -580,7 +408,6 @@ class _ReportsScreenState extends State<ReportsScreen>
                                 child: const Text('RÉESSAYER'),
                               ),
                             ],
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                           ),
                         )
                       : filteredSignalements.isEmpty
@@ -753,20 +580,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-<<<<<<< HEAD
-                          refNumber,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textHint,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          report.title,
-=======
                           report.type,
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -777,7 +591,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                         const SizedBox(height: 2),
                         Text(
                           'Code: ${report.code}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textHint,
                             fontWeight: FontWeight.w500,
@@ -824,20 +638,6 @@ class _ReportsScreenState extends State<ReportsScreen>
               // Priorité et date
               Row(
                 children: [
-<<<<<<< HEAD
-                  const Icon(
-                    Icons.location_on_outlined,
-                    size: 14,
-                    color: AppColors.textHint,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      report.locationAddress,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textHint,
-=======
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -856,15 +656,10 @@ class _ReportsScreenState extends State<ReportsScreen>
                         fontSize: 9,
                         fontWeight: FontWeight.w600,
                         color: priorityColor,
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                       ),
                     ),
                   ),
-<<<<<<< HEAD
-                  const SizedBox(width: 8),
-=======
                   const SizedBox(width: 12),
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                   const Icon(
                     Icons.access_time,
                     size: 12,
@@ -926,16 +721,11 @@ class _ReportsScreenState extends State<ReportsScreen>
                   ),
                   child: const Row(
                     children: [
-<<<<<<< HEAD
-                      Icon(Icons.check_circle,
-                          color: AppColors.resolved, size: 16),
-=======
                       Icon(
                         Icons.check_circle,
                         color: AppColors.resolved,
                         size: 16,
                       ),
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -1074,7 +864,7 @@ class _ReportsScreenState extends State<ReportsScreen>
             width: 90,
             child: Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textSecondary,

@@ -1,10 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-<<<<<<< HEAD
-=======
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/api_config.dart';
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
 import '../models/user_model.dart';
 
 class AuthService {
@@ -74,14 +70,10 @@ class AuthService {
           'user': user,
         };
       } else if (response.statusCode == 401) {
-<<<<<<< HEAD
-        return {'success': false, 'error': 'Email ou mot de passe incorrect'};
-=======
         return {
           'success': false,
           'message': 'Email ou mot de passe incorrect',
         };
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
       } else {
         return {
           'success': false,
@@ -89,14 +81,10 @@ class AuthService {
         };
       }
     } catch (e) {
-<<<<<<< HEAD
-      return {'success': false, 'error': 'Erreur de connexion: $e'};
-=======
       return {
         'success': false,
         'message': 'Erreur de connexion: $e',
       };
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
     }
   }
 
@@ -126,14 +114,10 @@ class AuthService {
         };
       }
     } catch (e) {
-<<<<<<< HEAD
-      return {'success': false, 'error': 'Erreur de connexion: $e'};
-=======
       return {
         'success': false,
         'message': 'Erreur de connexion: $e',
       };
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
     }
   }
 

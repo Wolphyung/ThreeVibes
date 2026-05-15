@@ -127,27 +127,15 @@ class ProfileScreen extends StatelessWidget {
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-<<<<<<< HEAD
-                                Icon(
-                                  Icons.verified,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Citoyen Vérifié',
-                                  style: TextStyle(
-=======
                                 const Icon(Icons.verified,
                                     size: 16, color: Colors.white),
                                 const SizedBox(width: 6),
                                 Text(
                                   user.role.label,
                                   style: const TextStyle(
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                                     fontSize: 13,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,
@@ -351,7 +339,6 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-<<<<<<< HEAD
                 Text(
                   label,
                   style: const TextStyle(
@@ -359,11 +346,6 @@ class ProfileScreen extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
-=======
-                Text(label,
-                    style: const TextStyle(
-                        fontSize: 12, color: AppColors.textSecondary)),
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                 const SizedBox(height: 2),
                 Text(value,
                     style: const TextStyle(
@@ -421,7 +403,6 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
-<<<<<<< HEAD
                     Text(
                       subtitle,
                       style: const TextStyle(
@@ -429,11 +410,6 @@ class ProfileScreen extends StatelessWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-=======
-                    Text(subtitle,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary)),
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
                   ],
                 ],
               ),
@@ -445,7 +421,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-<<<<<<< HEAD
   Widget _buildDivider() {
     return const Divider(
       height: 1,
@@ -454,10 +429,6 @@ class ProfileScreen extends StatelessWidget {
       indent: 70,
     );
   }
-=======
-  Widget _buildDivider() =>
-      Divider(height: 1, thickness: 1, color: AppColors.border, indent: 70);
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
 
   String _formatDate(DateTime date) {
     const months = [
@@ -541,7 +512,6 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-<<<<<<< HEAD
             Text(
               '© ${DateTime.now().year} Fianara Smart City',
               style: const TextStyle(
@@ -549,10 +519,6 @@ class ProfileScreen extends StatelessWidget {
                 color: AppColors.textHint,
               ),
             ),
-=======
-            Text('© ${DateTime.now().year} Fianara Smart City',
-                style: TextStyle(fontSize: 11, color: AppColors.textHint)),
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
           ],
         ),
         actions: [
@@ -569,7 +535,6 @@ class ProfileScreen extends StatelessWidget {
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
 
-<<<<<<< HEAD
     bool isCurrentPasswordVisible = false;
     bool isNewPasswordVisible = false;
     bool isConfirmPasswordVisible = false;
@@ -715,13 +680,66 @@ class ProfileScreen extends StatelessWidget {
                 child: const Text('Annuler'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  _validateAndChangePassword(
-                    context,
-                    currentPasswordController.text,
-                    newPasswordController.text,
-                    confirmPasswordController.text,
-                  );
+                onPressed: () async {
+                  final newPwd = newPasswordController.text;
+                  final confirmPwd = confirmPasswordController.text;
+                  final currentPwd = currentPasswordController.text;
+
+                  if (currentPwd.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Veuillez entrer votre mot de passe actuel'),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (newPwd.isEmpty || newPwd.length < 6) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Le mot de passe doit contenir au moins 6 caractères'),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (newPwd != confirmPwd) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Les mots de passe ne correspondent pas'),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                    return;
+                  }
+
+                  final success =
+                      await authProvider.changePassword(currentPwd, newPwd);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content:
+                              Text('Mot de passe modifié avec succès !'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              authProvider.errorMessage ?? 'Erreur'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -735,170 +753,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _validateAndChangePassword(
-    BuildContext context,
-    String currentPassword,
-    String newPassword,
-    String confirmPassword,
-  ) {
-    if (currentPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez entrer votre mot de passe actuel'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (newPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez entrer un nouveau mot de passe'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Le mot de passe doit contenir au moins 6 caractères'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Les mots de passe ne correspondent pas'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    Navigator.pop(context);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Mot de passe modifié avec succès !'),
-        backgroundColor: AppColors.success,
-        duration: Duration(seconds: 3),
-      ),
-    );
-
-    _showReconnectDialog(context);
-  }
-
-  void _showReconnectDialog(BuildContext context) {
-=======
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sécurité & Mot de passe'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.security, size: 48, color: AppColors.primary),
-              const SizedBox(height: 16),
-              const Text('Changer votre mot de passe',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Text(
-                'Pour votre sécurité, choisissez un mot de passe fort',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: currentPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Mot de passe actuel',
-                  prefixIcon: Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12))),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: newPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Nouveau mot de passe',
-                  prefixIcon: Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12))),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Confirmer le mot de passe',
-                  prefixIcon: Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12))),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler')),
-          ElevatedButton(
-            onPressed: () async {
-              if (newPasswordController.text !=
-                  confirmPasswordController.text) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Les mots de passe ne correspondent pas'),
-                      backgroundColor: AppColors.error),
-                );
-                return;
-              }
-              final success = await authProvider.changePassword(
-                  currentPasswordController.text, newPasswordController.text);
-              if (context.mounted) {
-                Navigator.pop(context);
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Mot de passe modifié avec succès !'),
-                        backgroundColor: AppColors.success),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(authProvider.errorMessage ?? 'Erreur'),
-                        backgroundColor: AppColors.error),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text('MODIFIER'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showLogoutDialog(BuildContext context, AuthProvider authProvider) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-<<<<<<< HEAD
         title: const Row(
           children: [
             Icon(Icons.logout, color: AppColors.error, size: 28),
@@ -945,11 +803,6 @@ class ProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         actionsAlignment: MainAxisAlignment.spaceBetween,
-=======
-        title: const Text('Déconnexion'),
-        content: const Text('Voulez-vous vraiment vous déconnecter ?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),

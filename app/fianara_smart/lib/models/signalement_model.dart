@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 // lib/features/admin/models/signalement_model.dart
-=======
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
 class SignalementModel {
   final String code;
   final String type;
@@ -40,32 +37,19 @@ class SignalementModel {
     }
 
     return SignalementModel(
-<<<<<<< HEAD
       code: json['codesignalement']?.toString() ?? '',
       type: json['typesignalement']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       dateSignalement: json['datesignalement'] != null
           ? DateTime.parse(json['datesignalement'].toString())
-=======
-      code: json['code'] ?? json['codeSignalement'] ?? '',
-      type: json['typeSignalement'] ?? json['type'] ?? '',
-      description: json['description'] ?? '',
-      dateSignalement: json['dateSignalement'] != null
-          ? DateTime.parse(json['dateSignalement'])
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
           : DateTime.now(),
       latitude: (json['latitude'] ?? 0.0).toDouble(),
       longitude: (json['longitude'] ?? 0.0).toDouble(),
       codeUtilisateur: json['codeutilisateur']?.toString() ?? '',
       fonctions: List<String>.from(json['fonctions'] ?? []),
-<<<<<<< HEAD
       status: json['status']?.toString() ?? 'EN COURS',
       priorite: json['priorite']?.toString() ?? 'NORMAL',
       images: imageUrls,
-=======
-      status: json['status'] ?? 'EN ATTENTE',
-      priorite: json['priorite'] ?? 'NORMAL',
->>>>>>> ad647aa55ee6cea1612beb10935f79bf917b2910
     );
   }
 
