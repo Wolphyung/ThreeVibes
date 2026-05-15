@@ -184,78 +184,6 @@ class _ReportsScreenState extends State<ReportsScreen>
     }
   }
 
-  // Fonction pour modifier un signalement
-  Future<void> _editReport(SignalementModel report) async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => _EditReportDialog(report: report),
-    );
-
-    if (result != null && mounted) {
-      setState(() {
-        final index = _signalements.indexWhere((s) => s.code == report.code);
-        if (index != -1) {
-          _signalements[index] = SignalementModel(
-            code: report.code,
-            type: result['type'] ?? report.type,
-            description: result['description'] ?? report.description,
-            dateSignalement: report.dateSignalement,
-            latitude: report.latitude,
-            longitude: report.longitude,
-            codeUtilisateur: report.codeUtilisateur,
-            fonctions: result['fonctions'] ?? report.fonctions,
-            status: result['status'] ?? report.status,
-            priorite: result['priorite'] ?? report.priorite,
-          );
-        }
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Signalement modifié avec succès'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
-  }
-
-  // Fonction pour supprimer un signalement
-  Future<void> _deleteReport(SignalementModel report) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmation'),
-        content: Text(
-            'Voulez-vous vraiment supprimer le signalement "${report.type}" ?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('ANNULER'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text('SUPPRIMER'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true && mounted) {
-      setState(() {
-        _signalements.removeWhere((s) => s.code == report.code);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Signalement supprimé avec succès'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final filteredSignalements = _filteredSignalements;
@@ -707,7 +635,7 @@ class _ReportsScreenState extends State<ReportsScreen>
               ),
               const SizedBox(height: 12),
 
-              // Priorité, date et actions
+              // Priorité et date
               Row(
                 children: [
                   Container(
@@ -738,38 +666,22 @@ class _ReportsScreenState extends State<ReportsScreen>
                     color: AppColors.textHint,
                   ),
                   const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      report.timeAgo,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textHint,
-                      ),
+                  Text(
+                    report.timeAgo,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textHint,
                     ),
                   ),
-                  // Boutons Modifier et Supprimer (visible uniquement pour admin)
+                  const Spacer(),
                   if (widget.userCode == null)
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit_outlined, size: 20),
-                          onPressed: () => _editReport(report),
-                          color: AppColors.primary,
-                          tooltip: 'Modifier',
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.all(4),
-                          splashRadius: 20,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, size: 20),
-                          onPressed: () => _deleteReport(report),
-                          color: AppColors.error,
-                          tooltip: 'Supprimer',
-                          constraints: const BoxConstraints(),
-                          padding: const EdgeInsets.all(4),
-                          splashRadius: 20,
-                        ),
-                      ],
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      onPressed: () => _showReportDetails(report),
+                      color: AppColors.primary,
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                      splashRadius: 20,
                     ),
                 ],
               ),
@@ -918,47 +830,18 @@ class _ReportsScreenState extends State<ReportsScreen>
                             child: ElevatedButton.icon(
                               onPressed: () {
                                 Navigator.pop(context);
-                                _editReport(report);
+                                _updateReportStatus(report.code, 'TRAITÉ');
                               },
-                              icon: const Icon(Icons.edit, size: 18),
-                              label: const Text('MODIFIER'),
+                              icon: const Icon(Icons.check_circle, size: 18),
+                              label: const Text('MARQUER TRAITÉ'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _deleteReport(report);
-                              },
-                              icon: const Icon(Icons.delete, size: 18),
-                              label: const Text('SUPPRIMER'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.error,
+                                backgroundColor: AppColors.resolved,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 10),
                               ),
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _updateReportStatus(report.code, 'TRAITÉ');
-                        },
-                        icon: const Icon(Icons.check_circle, size: 18),
-                        label: const Text('MARQUER TRAITÉ'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.resolved,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
                       ),
                     ],
                   ],
@@ -1046,160 +929,5 @@ class _ReportsScreenState extends State<ReportsScreen>
         );
       }
     }
-  }
-}
-
-// Dialogue de modification
-class _EditReportDialog extends StatefulWidget {
-  final SignalementModel report;
-  const _EditReportDialog({required this.report});
-
-  @override
-  State<_EditReportDialog> createState() => _EditReportDialogState();
-}
-
-class _EditReportDialogState extends State<_EditReportDialog> {
-  late TextEditingController _typeController;
-  late TextEditingController _descriptionController;
-  late TextEditingController _fonctionsController;
-  String _selectedStatus = '';
-  String _selectedPriority = '';
-  final List<String> _statusOptions = [
-    'EN ATTENTE',
-    'EN COURS',
-    'TRAITÉ',
-    'REJETÉ'
-  ];
-  final List<String> _priorityOptions = ['NORMAL', 'ÉLEVÉ', 'URGENT'];
-
-  @override
-  void initState() {
-    super.initState();
-    _typeController = TextEditingController(text: widget.report.type);
-    _descriptionController =
-        TextEditingController(text: widget.report.description);
-    _fonctionsController = TextEditingController(
-      text: widget.report.fonctions.join(', '),
-    );
-    _selectedStatus = widget.report.status;
-    _selectedPriority = widget.report.priorite;
-  }
-
-  @override
-  void dispose() {
-    _typeController.dispose();
-    _descriptionController.dispose();
-    _fonctionsController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Modifier le signalement',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _typeController,
-              decoration: const InputDecoration(
-                labelText: 'Type',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _fonctionsController,
-              decoration: const InputDecoration(
-                labelText: 'Fonctions (séparées par des virgules)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedStatus,
-              decoration: const InputDecoration(
-                labelText: 'Statut',
-                border: OutlineInputBorder(),
-              ),
-              items: _statusOptions.map((status) {
-                return DropdownMenuItem(value: status, child: Text(status));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedStatus = value!;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedPriority,
-              decoration: const InputDecoration(
-                labelText: 'Priorité',
-                border: OutlineInputBorder(),
-              ),
-              items: _priorityOptions.map((priority) {
-                return DropdownMenuItem(value: priority, child: Text(priority));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedPriority = value!;
-                });
-              },
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('ANNULER'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context, {
-                        'type': _typeController.text,
-                        'description': _descriptionController.text,
-                        'fonctions': _fonctionsController.text
-                            .split(',')
-                            .map((e) => e.trim())
-                            .where((e) => e.isNotEmpty)
-                            .toList(),
-                        'status': _selectedStatus,
-                        'priorite': _selectedPriority,
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                    ),
-                    child: const Text('ENREGISTRER'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

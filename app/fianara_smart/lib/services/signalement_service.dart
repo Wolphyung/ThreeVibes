@@ -1,3 +1,4 @@
+// lib/services/signalement_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -6,19 +7,18 @@ import '../core/api_config.dart';
 
 class SignalementService {
   // Récupérer tous les signalements
-  static Future<List<Map<String, dynamic>>> getAllSignalements(
-      {String? searchQuery}) async {
+  static Future<List<dynamic>> getAllSignalements({String? searchQuery}) async {
     try {
       String url = '${ApiConfig.baseUrl}${ApiConfig.signalements}';
       if (searchQuery != null && searchQuery.isNotEmpty) {
-        url += '?search=$searchQuery';
+        url += '?q=$searchQuery';
       }
 
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(data['data'] ?? []);
+        return data['data'] ?? [];
       } else {
         throw Exception('Erreur lors du chargement des signalements');
       }
@@ -27,42 +27,20 @@ class SignalementService {
     }
   }
 
-  // Récupérer les signalements d'un utilisateur
-  static Future<List<Map<String, dynamic>>> getUserSignalements(
-      String userCode) async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-            '${ApiConfig.baseUrl}${ApiConfig.signalements}/user/$userCode'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(data['data'] ?? []);
-      } else {
-        throw Exception(
-            'Erreur lors du chargement des signalements utilisateur');
-      }
-    } catch (e) {
-      throw Exception('Erreur: $e');
-    }
-  }
-
   // Récupérer les signalements à proximité
-  static Future<List<Map<String, dynamic>>> getNearbySignalements({
+  static Future<List<dynamic>> getNearbySignalements({
     required double lat,
     required double lng,
-    int radius = 10,
+    int count = 10,
   }) async {
     try {
       final response = await http.get(
         Uri.parse(
-            '${ApiConfig.baseUrl}${ApiConfig.signalementsNearby}?lat=$lat&lng=$lng&radius=$radius'),
+            '${ApiConfig.baseUrl}${ApiConfig.signalementsNearby}?lat=$lat&lng=$lng&count=$count'),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return List<Map<String, dynamic>>.from(data['data'] ?? []);
+        return json.decode(response.body);
       } else {
         throw Exception(
             'Erreur lors du chargement des signalements à proximité');
@@ -95,7 +73,7 @@ class SignalementService {
       request.fields['codeUtilisateur'] = codeUtilisateur;
       request.fields['fonctions'] = json.encode(fonctions);
 
-      if (files != null && files.isNotEmpty) {
+      if (files != null) {
         for (var i = 0; i < files.length; i++) {
           request.files.add(await http.MultipartFile.fromPath(
             'files',
@@ -124,21 +102,6 @@ class SignalementService {
         'success': false,
         'error': 'Erreur: $e',
       };
-    }
-  }
-
-  // Mettre à jour le statut
-  static Future<bool> updateSignalementStatus(
-      String code, String newStatus) async {
-    try {
-      final response = await http.patch(
-        Uri.parse('${ApiConfig.baseUrl}${ApiConfig.signalements}/$code/status'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'status': newStatus}),
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
     }
   }
 }

@@ -18,22 +18,62 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              await authProvider.refreshUser();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Profil actualisé'),
+                    backgroundColor: AppColors.success,
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: user == null
-          ? const Center(child: Text('Non connecté'))
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.person_off_outlined,
+                    size: 64,
+                    color: AppColors.textHint,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Non connecté',
+                    style:
+                        TextStyle(fontSize: 16, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                    ),
+                    child: const Text('SE CONNECTER'),
+                  ),
+                ],
+              ),
+            )
           : CustomScrollView(
               slivers: [
-                // Header avec photo et informations
                 SliverToBoxAdapter(
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.primary,
-                          AppColors.primaryLight,
-                        ],
+                        colors: [AppColors.primary, AppColors.primaryLight],
                       ),
                       borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(30),
@@ -45,7 +85,6 @@ class ProfileScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           const SizedBox(height: 20),
-                          // Avatar
                           Container(
                             width: 110,
                             height: 110,
@@ -83,9 +122,7 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
-                            ),
+                                horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -93,14 +130,11 @@ class ProfileScreen extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.verified,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
+                                const Icon(Icons.verified,
+                                    size: 16, color: Colors.white),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'Citoyen Vérifié',
+                                  user.role.label,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: Colors.white,
@@ -113,9 +147,7 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
+                                horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
@@ -123,19 +155,14 @@ class ProfileScreen extends StatelessWidget {
                             child: Text(
                               'ID: ${user.codeUtilisateur}',
                               style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.white70,
-                              ),
+                                  fontSize: 12, color: Colors.white70),
                             ),
                           ),
-                          const SizedBox(height: 8),
                         ],
                       ),
                     ),
                   ),
                 ),
-
-                // Section Informations Personnelles
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -148,7 +175,6 @@ class ProfileScreen extends StatelessWidget {
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
-                            letterSpacing: 0.5,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -176,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
                               _buildInfoTile(
                                 icon: Icons.phone_outlined,
                                 label: 'Téléphone',
-                                value: user.phoneNumber ?? '+261 34 22 333 44',
+                                value: user.phoneNumber ?? 'Non renseigné',
                                 color: AppColors.primary,
                               ),
                               _buildDivider(),
@@ -211,8 +237,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Section Paramètres
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -225,7 +249,6 @@ class ProfileScreen extends StatelessWidget {
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textSecondary,
-                            letterSpacing: 0.5,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -244,63 +267,39 @@ class ProfileScreen extends StatelessWidget {
                           child: Column(
                             children: [
                               _buildSettingsTile(
-                                icon: Icons.notifications_none,
-                                title: 'Notifications',
-                                trailing: Switch(
-                                  value: true,
-                                  onChanged: (value) {},
-                                  activeThumbColor: AppColors.primary,
-                                ),
-                              ),
-                              _buildDivider(),
-                              _buildSettingsTile(
                                 icon: Icons.security,
                                 title: 'Sécurité & MDP',
-                                trailing: const Icon(
-                                  Icons.chevron_right,
-                                  color: AppColors.textSecondary,
-                                ),
-                                onTap: () {
-                                  _showSecurityDialog(context, authProvider);
-                                },
+                                trailing: const Icon(Icons.chevron_right,
+                                    color: AppColors.textSecondary),
+                                onTap: () =>
+                                    _showSecurityDialog(context, authProvider),
                               ),
                               _buildDivider(),
                               _buildSettingsTile(
                                 icon: Icons.language,
                                 title: 'Langue',
                                 subtitle: 'Français',
-                                trailing: const Icon(
-                                  Icons.chevron_right,
-                                  color: AppColors.textSecondary,
-                                ),
-                                onTap: () {
-                                  _showLanguageDialog(context);
-                                },
+                                trailing: const Icon(Icons.chevron_right,
+                                    color: AppColors.textSecondary),
+                                onTap: () => _showLanguageDialog(context),
                               ),
                               _buildDivider(),
                               _buildSettingsTile(
                                 icon: Icons.info_outline,
                                 title: 'À propos',
                                 subtitle: 'Version 1.0.0',
-                                trailing: const Icon(
-                                  Icons.chevron_right,
-                                  color: AppColors.textSecondary,
-                                ),
-                                onTap: () {
-                                  _showAboutDialog(context);
-                                },
+                                trailing: const Icon(Icons.chevron_right,
+                                    color: AppColors.textSecondary),
+                                onTap: () => _showAboutDialog(context),
                               ),
                               _buildDivider(),
                               _buildSettingsTile(
                                 icon: Icons.logout,
                                 title: 'Déconnexion',
-                                trailing: const Icon(
-                                  Icons.chevron_right,
-                                  color: AppColors.error,
-                                ),
-                                onTap: () {
-                                  _showLogoutDialog(context, authProvider);
-                                },
+                                trailing: const Icon(Icons.chevron_right,
+                                    color: AppColors.error),
+                                onTap: () =>
+                                    _showLogoutDialog(context, authProvider),
                                 isDestructive: true,
                               ),
                             ],
@@ -310,7 +309,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SliverPadding(padding: EdgeInsets.only(bottom: 30)),
               ],
             ),
@@ -341,22 +339,13 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                Text(label,
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary)),
                 const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
+                Text(value,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
@@ -389,11 +378,9 @@ class ProfileScreen extends StatelessWidget {
                     : AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                size: 22,
-                color: isDestructive ? AppColors.error : AppColors.primary,
-              ),
+              child: Icon(icon,
+                  size: 22,
+                  color: isDestructive ? AppColors.error : AppColors.primary),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -412,13 +399,9 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
+                    Text(subtitle,
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary)),
                   ],
                 ],
               ),
@@ -430,17 +413,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDivider() {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      color: AppColors.border,
-      indent: 70,
-    );
-  }
+  Widget _buildDivider() =>
+      Divider(height: 1, thickness: 1, color: AppColors.border, indent: 70);
 
   String _formatDate(DateTime date) {
-    final months = [
+    const months = [
       'janvier',
       'février',
       'mars',
@@ -462,9 +439,7 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Choisir la langue'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -494,9 +469,7 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('À propos'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -507,25 +480,15 @@ class ProfileScreen extends StatelessWidget {
                 gradient: AppColors.primaryGradient,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(
-                Icons.location_city,
-                size: 40,
-                color: Colors.white,
-              ),
+              child: const Icon(Icons.location_city,
+                  size: 40, color: Colors.white),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Fianara Smart City',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            const Text('Fianara Smart City',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text(
-              'Version 1.0.0',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
+            const Text('Version 1.0.0',
+                style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 16),
             const Text(
               'Application de gestion des signalements citoyens pour la ville de Fianarantsoa.',
@@ -535,20 +498,14 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 8),
-            Text(
-              '© ${DateTime.now().year} Fianara Smart City',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppColors.textHint,
-              ),
-            ),
+            Text('© ${DateTime.now().year} Fianara Smart City',
+                style: TextStyle(fontSize: 11, color: AppColors.textHint)),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fermer')),
         ],
       ),
     );
@@ -559,251 +516,97 @@ class ProfileScreen extends StatelessWidget {
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
 
-    bool isCurrentPasswordVisible = false;
-    bool isNewPasswordVisible = false;
-    bool isConfirmPasswordVisible = false;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Sécurité & Mot de passe'),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.security,
-                    size: 48,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Changer votre mot de passe',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Pour votre sécurité, choisissez un mot de passe fort',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  TextField(
-                    controller: currentPasswordController,
-                    obscureText: !isCurrentPasswordVisible,
-                    decoration: InputDecoration(
-                      labelText: 'Mot de passe actuel',
-                      hintText: 'Entrez votre mot de passe actuel',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isCurrentPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isCurrentPasswordVisible =
-                                !isCurrentPasswordVisible;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: newPasswordController,
-                    obscureText: !isNewPasswordVisible,
-                    decoration: InputDecoration(
-                      labelText: 'Nouveau mot de passe',
-                      hintText: 'Minimum 6 caractères',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isNewPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isNewPasswordVisible = !isNewPasswordVisible;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: confirmPasswordController,
-                    obscureText: !isConfirmPasswordVisible,
-                    decoration: InputDecoration(
-                      labelText: 'Confirmer le mot de passe',
-                      hintText: 'Retapez votre nouveau mot de passe',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isConfirmPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isConfirmPasswordVisible =
-                                !isConfirmPasswordVisible;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.warning.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: AppColors.warning),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Text(
-                            'Utilisez au moins 8 caractères avec lettres, chiffres et symboles',
-                            style: TextStyle(fontSize: 11),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Annuler'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _validateAndChangePassword(
-                    context,
-                    currentPasswordController.text,
-                    newPasswordController.text,
-                    confirmPasswordController.text,
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                ),
-                child: const Text('MODIFIER'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _validateAndChangePassword(
-    BuildContext context,
-    String currentPassword,
-    String newPassword,
-    String confirmPassword,
-  ) {
-    if (currentPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez entrer votre mot de passe actuel'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (newPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez entrer un nouveau mot de passe'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Le mot de passe doit contenir au moins 6 caractères'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Les mots de passe ne correspondent pas'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    Navigator.pop(context);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Mot de passe modifié avec succès !'),
-        backgroundColor: AppColors.success,
-        duration: Duration(seconds: 3),
-      ),
-    );
-
-    _showReconnectDialog(context);
-  }
-
-  void _showReconnectDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reconnexion nécessaire'),
-        content: const Text(
-          'Pour des raisons de sécurité, veuillez vous reconnecter avec votre nouveau mot de passe.',
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+        title: const Text('Sécurité & Mot de passe'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.security, size: 48, color: AppColors.primary),
+              const SizedBox(height: 16),
+              const Text('Changer votre mot de passe',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Text(
+                'Pour votre sécurité, choisissez un mot de passe fort',
+                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: currentPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Mot de passe actuel',
+                  prefixIcon: Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12))),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: newPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Nouveau mot de passe',
+                  prefixIcon: Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12))),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Confirmer le mot de passe',
+                  prefixIcon: Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12))),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler')),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/login');
+            onPressed: () async {
+              if (newPasswordController.text !=
+                  confirmPasswordController.text) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('Les mots de passe ne correspondent pas'),
+                      backgroundColor: AppColors.error),
+                );
+                return;
+              }
+              final success = await authProvider.changePassword(
+                  currentPasswordController.text, newPasswordController.text);
+              if (context.mounted) {
+                Navigator.pop(context);
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Mot de passe modifié avec succès !'),
+                        backgroundColor: AppColors.success),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(authProvider.errorMessage ?? 'Erreur'),
+                        backgroundColor: AppColors.error),
+                  );
+                }
+              }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-            ),
-            child: const Text('SE RECONNECTER'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('MODIFIER'),
           ),
         ],
       ),
@@ -813,108 +616,24 @@ class ProfileScreen extends StatelessWidget {
   void _showLogoutDialog(BuildContext context, AuthProvider authProvider) {
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.logout, color: AppColors.error, size: 28),
-            const SizedBox(width: 12),
-            const Text(
-              'Déconnexion',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Voulez-vous vraiment vous déconnecter ?',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: AppColors.warning, size: 20),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Vous devrez vous reconnecter pour accéder à votre compte',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        actionsAlignment: MainAxisAlignment.spaceBetween,
+        title: const Text('Déconnexion'),
+        content: const Text('Voulez-vous vraiment vous déconnecter ?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              foregroundColor: AppColors.textSecondary,
-            ),
-            child: const Text('ANNULER'),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('ANNULER')),
           ElevatedButton(
             onPressed: () async {
-              // Afficher un indicateur de chargement
               Navigator.pop(context);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Row(
-                    children: [
-                      SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Text('Déconnexion en cours...'),
-                    ],
-                  ),
-                  backgroundColor: AppColors.primary,
-                  duration: Duration(seconds: 1),
-                ),
-              );
-
-              await Future.delayed(const Duration(milliseconds: 500));
               await authProvider.logout();
-
               if (context.mounted) {
-                Navigator.pop(context);
                 Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/login',
-                  (route) => false,
-                );
+                    context, '/login', (route) => false);
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             child: const Text('DÉCONNECTER'),
           ),
         ],
