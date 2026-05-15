@@ -890,43 +890,6 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
 
     showDialog(
       context: context,
-<<<<<<< HEAD
-      builder: (context) => AlertDialog(
-        title: const Text('Modifier l\'annonce'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: TextEditingController(text: announcement['title']),
-                decoration: const InputDecoration(
-                  labelText: 'Titre',
-                  prefixIcon: Icon(Icons.title),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller:
-                    TextEditingController(text: announcement['content']),
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: 'Contenu',
-                  prefixIcon: Icon(Icons.content_paste),
-                  alignLabelWithHint: true,
-                ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: announcement['priority'],
-                decoration: const InputDecoration(
-                  labelText: 'Priorité',
-                  prefixIcon: Icon(Icons.priority_high),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Normale', child: Text('Normale')),
-                  DropdownMenuItem(value: 'Élevée', child: Text('Élevée')),
-                  DropdownMenuItem(value: 'Urgente', child: Text('Urgente')),
-=======
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
@@ -975,7 +938,6 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                       });
                     },
                   ),
->>>>>>> ab5b510b0e5d51fbce79c225479cea42f1147e5b
                 ],
               ),
             ),

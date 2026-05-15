@@ -38,7 +38,10 @@ class UserModel {
     this.updatedAt,
     this.isActive = true,
     this.token,
+    this.codeFonction,
   });
+
+  final String? codeFonction;
 
   String get fullName => '$nom $prenoms';
 
@@ -68,8 +71,10 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-      codeUtilisateur:
-          json['codeUtilisateur']?.toString() ?? json['id']?.toString() ?? '',
+      codeUtilisateur: json['codeUtilisateur']?.toString() ??
+          json['codeutilisateur']?.toString() ??
+          json['id']?.toString() ??
+          '',
       nom: json['nom']?.toString() ?? '',
       prenoms: json['prenoms']?.toString() ?? '',
       numCIN: json['numCIN']?.toString() ?? '',
@@ -89,6 +94,8 @@ class UserModel {
           : null,
       isActive: json['isActive'] ?? true,
       token: json['token']?.toString(),
+      codeFonction:
+          json['codeFonction']?.toString() ?? json['codefonction']?.toString(),
     );
   }
 
@@ -106,34 +113,6 @@ class UserModel {
     };
   }
 
-<<<<<<< HEAD
-  UserModel copyWith({
-    String? nom,
-    String? prenoms,
-    String? adresse,
-    String? phoneNumber,
-    String? profileImage,
-    bool? isActive,
-    DateTime? lastLogin,
-  }) {
-    return UserModel(
-      id: id,
-      nom: nom ?? this.nom,
-      prenoms: prenoms ?? this.prenoms,
-      numCIN: numCIN,
-      dateCIN: dateCIN,
-      lieuCIN: lieuCIN,
-      adresse: adresse ?? this.adresse,
-      role: role,
-      codeUtilisateur: codeUtilisateur,
-      email: email,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
-      profileImage: profileImage ?? this.profileImage,
-      isActive: isActive ?? this.isActive,
-      createdAt: createdAt,
-      lastLogin: lastLogin ?? this.lastLogin,
-    );
-=======
   static UserRole _parseRole(String role) {
     switch (role.toUpperCase()) {
       case 'ADMIN':
@@ -145,6 +124,5 @@ class UserModel {
       default:
         return UserRole.citoyen;
     }
->>>>>>> ab5b510b0e5d51fbce79c225479cea42f1147e5b
   }
 }

@@ -2,8 +2,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user_model.dart';
-import '../services/auth_service.dart';
+import 'package:fianara_smart_city/models/user_model.dart';
+import 'package:fianara_smart_city/services/auth_service.dart';
+import 'package:fianara_smart_city/services/socket_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   UserModel? _currentUser;
@@ -47,6 +48,7 @@ class AuthProvider extends ChangeNotifier {
       try {
         final Map<String, dynamic> userMap = json.decode(userJson);
         _currentUser = UserModel.fromJson(userMap);
+        _joinSocketRooms();
         notifyListeners();
       } catch (e) {
         print('Error loading user: $e');
@@ -71,6 +73,8 @@ class AuthProvider extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', _token!);
         await prefs.setString('user_data', json.encode(_currentUser!.toJson()));
+
+        _joinSocketRooms();
 
         _isLoading = false;
         notifyListeners();
@@ -125,6 +129,8 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove('auth_token');
     await prefs.remove('user_data');
 
+    SocketService.disconnect();
+
     _token = null;
     _currentUser = null;
     _isLoading = false;
@@ -134,5 +140,14 @@ class AuthProvider extends ChangeNotifier {
   // Vérifier le statut d'authentification (pour le splash screen)
   Future<void> checkAuthStatus() async {
     await _loadSavedUser();
+  }
+
+  void _joinSocketRooms() {
+    if (_currentUser != null) {
+      SocketService.joinUserRoom(_currentUser!.id);
+      if (_currentUser!.codeFonction != null) {
+        SocketService.joinFonctionRoom(_currentUser!.codeFonction!);
+      }
+    }
   }
 }

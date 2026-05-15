@@ -82,23 +82,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    final filteredUsers = _selectedRole == 'Tous'
-        ? _users
-        : _users.where((user) {
-            if (_selectedRole == 'Citoyens') return user['role'] == 'Citoyen';
-            if (_selectedRole == 'Techniciens') {
-              return user['role'] == 'Technicien';
-            }
-            if (_selectedRole == 'Administrateurs') {
-              return user['role'] == 'Administrateur';
-            }
-            return true;
-          }).toList();
-=======
     final provider = Provider.of<AdminUsersProvider>(context);
     final filteredUsers = _filteredUsers;
->>>>>>> ab5b510b0e5d51fbce79c225479cea42f1147e5b
 
     return Scaffold(
       backgroundColor: AppColors.background,

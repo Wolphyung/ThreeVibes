@@ -30,12 +30,28 @@ import 'screens/admin_reports_screen.dart';
 import 'screens/admin_users_screen.dart';
 import 'screens/admin_announcements_screen.dart';
 import 'screens/admin_profile_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/location_picker_screen.dart';
+
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:fianara_smart_city/services/notification_service.dart';
+import 'package:fianara_smart_city/services/socket_service.dart';
 
 // Modèles
 import 'models/announcement_model.dart';
 import 'models/report_model.dart';
+import 'models/notification_model.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Hive
+  await Hive.initFlutter();
+  
+  // Initialize Services
+  await NotificationService.init();
+  SocketService.init();
+  
   runApp(const MyApp());
 }
 
@@ -61,6 +77,8 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             title: 'Fianara Smart City',
+            navigatorKey: NotificationService.navigatorKey,
+            scaffoldMessengerKey: NotificationService.messengerKey,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
@@ -79,6 +97,8 @@ class MyApp extends StatelessWidget {
               '/reports': (context) => const ReportsScreen(),
               '/report-form': (context) => const ReportFormScreen(),
               '/profile': (context) => const ProfileScreen(),
+              '/notifications': (context) => const NotificationsScreen(),
+              '/location-picker': (context) => const LocationPickerScreen(),
 
               // Routes Admin
               '/admin': (context) => const admin.AdminHomeScreen(),

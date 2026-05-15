@@ -1,8 +1,15 @@
-import 'dart:io';
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import '../constants/colors.dart';
 import '../models/report_model.dart';
+import '../providers/auth_provider.dart';
+import '../core/api_config.dart';
 import '../services/location_service.dart';
 
 class ReportFormScreen extends StatefulWidget {
@@ -26,8 +33,8 @@ class _ReportFormScreenState extends State<ReportFormScreen>
   double? _latitude;
   double? _longitude;
   String _address = '';
-  File? _imageFile;
-  final List<File> _images = [];
+  XFile? _imageFile;
+  List<XFile> _images = [];
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -81,7 +88,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
       final pickedFile = await _imagePicker.pickImage(source: source);
       if (pickedFile != null) {
         setState(() {
-          _images.add(File(pickedFile.path));
+          _images.add(pickedFile);
         });
       }
     } catch (e) {
@@ -167,7 +174,17 @@ class _ReportFormScreenState extends State<ReportFormScreen>
     if (_latitude == null || _longitude == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Veuillez activer votre localisation'),
+          content: Text('Veuillez sélectionner une position sur la carte'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    if (_images.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez ajouter au moins une photo'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -176,21 +193,90 @@ class _ReportFormScreenState extends State<ReportFormScreen>
 
     setState(() => _isLoading = true);
 
-    // Simulation d'envoi
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.currentUser?.codeUtilisateur ?? 'U0001';
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Signalement envoyé avec succès !'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 2),
-        ),
-      );
-      Navigator.pop(context);
+      // 1. Prepare Multipart Request
+      final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.signalements}');
+      final request = http.MultipartRequest('POST', uri);
+
+      // 2. Add Headers
+      if (authProvider.token != null) {
+        request.headers['Authorization'] = 'Bearer ${authProvider.token}';
+      }
+
+      // 3. Add Fields
+      request.fields['typeSignalement'] = _selectedType!.label;
+      request.fields['description'] = _descriptionController.text;
+      request.fields['dateSignalement'] = DateTime.now().toIso8601String();
+      request.fields['latitude'] = _latitude.toString();
+      request.fields['longitude'] = _longitude.toString();
+      request.fields['codeUtilisateur'] = userId;
+
+      // Add fonctions (List)
+      request.fields['fonctions[0]'] = _getFonctionCode(_selectedType!);
+
+      // 4. Add Files (XFile compatible with Web)
+      for (var image in _images) {
+        final bytes = await image.readAsBytes();
+        final multipartFile = http.MultipartFile.fromBytes(
+          'files',
+          bytes,
+          filename: image.name,
+        );
+        request.files.add(multipartFile);
+      }
+
+      // 5. Send Request
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Signalement envoyé avec succès !'),
+              backgroundColor: AppColors.success,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        throw Exception('Erreur ${response.statusCode}: $responseData');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Échec de l\'envoi: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
+  }
 
-    setState(() => _isLoading = false);
+  String _getFonctionCode(ReportType type) {
+    switch (type) {
+      case ReportType.water:
+        return 'FO001';
+      case ReportType.lighting:
+        return 'FO002';
+      case ReportType.infrastructure:
+        return 'FO003';
+      case ReportType.security:
+        return 'FO004';
+      case ReportType.waste:
+        return 'FO005';
+      case ReportType.cleanliness:
+        return 'FO006';
+      default:
+        return 'FO011';
+    }
   }
 
   String _getCategoryLabel(ReportType type) {
@@ -421,7 +507,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Localisation',
+                      'Localisation (OpenStreetMap)',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -429,10 +515,23 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                     ),
                     const SizedBox(height: 12),
                     InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/map').then((_) {
-                          _getCurrentLocation();
-                        });
+                      onTap: () async {
+                        final result = await Navigator.pushNamed(
+                          context,
+                          '/location-picker',
+                          arguments: _latitude != null
+                              ? LatLng(_latitude!, _longitude!)
+                              : null,
+                        ) as Map<String, dynamic>?;
+
+                        if (result != null) {
+                          setState(() {
+                            _latitude = (result['location'] as LatLng).latitude;
+                            _longitude =
+                                (result['location'] as LatLng).longitude;
+                            _address = result['address'];
+                          });
+                        }
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
@@ -573,12 +672,18 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                                   width: 100,
                                   height: 100,
                                   margin: const EdgeInsets.only(right: 12),
-                                  decoration: BoxDecoration(
+                                  child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
-                                    image: DecorationImage(
-                                      image: FileImage(_images[index]),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: kIsWeb
+                                        ? Image.network(_images[index].path,
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100)
+                                        : Image.file(
+                                            io.File(_images[index].path),
+                                            fit: BoxFit.cover,
+                                            width: 100,
+                                            height: 100),
                                   ),
                                 ),
                                 Positioned(
