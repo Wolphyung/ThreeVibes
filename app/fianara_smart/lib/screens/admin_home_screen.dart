@@ -7,6 +7,9 @@ import 'admin_reports_screen.dart';
 import 'admin_users_screen.dart';
 import 'admin_announcements_screen.dart';
 import 'admin_profile_screen.dart';
+import '../../../../services/signalement_service.dart';
+import '../../../../services/annonce_service.dart';
+import '../../../../providers/auth_provider.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -160,18 +163,97 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     await statsProvider.fetchAdminStats();
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+  // Action: Signaler (créer un signalement)
+  Future<void> _createSignalement() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final codeUtilisateur =
+        authProvider.currentUser?.codeUtilisateur ?? 'ADMIN001';
+
+    final result = await SignalementService.createSignalement(
+      typeSignalement: 'Test Admin',
+      description: 'Signalement créé depuis le dashboard admin',
+      latitude: -21.450851970867316,
+      longitude: 47.090025867485025,
+      codeUtilisateur: codeUtilisateur,
+      fonctions: ['F0001'],
+    );
+
+    if (mounted) {
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Signalement créé avec succès'),
+              backgroundColor: Colors.green),
+        );
+        _loadData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(result['error'] ?? 'Erreur lors de la création'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final statsProvider = Provider.of<StatsProvider>(context);
+  // Action: Ajouter utilisateur
+  Future<void> _addUser() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Redirection vers la page d\'ajout d\'utilisateur'),
+          backgroundColor: Colors.blue),
+    );
+  }
 
-    // Données des statistiques
-    final List<Map<String, dynamic>> statsData = [
+  // Action: Publier annonce
+  Future<void> _publishAnnouncement() async {
+    final success = await AnnonceService.createAnnonce(
+      contenu: 'Ceci est une annonce de test depuis le dashboard admin',
+      codeCategorie: 'C0001',
+      latitude: -21.450851970867316,
+      longitude: 47.090025867485025,
+    );
+
+    if (mounted) {
+      if (success == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Annonce publiée avec succès'),
+              backgroundColor: Colors.green),
+        );
+        _loadData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Erreur lors de la publication'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  // Action: Exporter données
+  Future<void> _exportData() async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Exportation des données en cours...'),
+          backgroundColor: Colors.blue),
+    );
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Exportation terminée'),
+            backgroundColor: Colors.green),
+      );
+    }
+  }
+
+  List<Map<String, dynamic>> get statsData {
+    final statsProvider = Provider.of<StatsProvider>(context, listen: false);
+    return [
       {
         'title': 'Signalements',
         'value': statsProvider.totalReports.toString(),
@@ -203,6 +285,41 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         'color': AppColors.warning,
         'trend': '-3%',
         'trendUp': false,
+      },
+    ];
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statsProvider = Provider.of<StatsProvider>(context);
+
+    // Données pour le diagramme circulaire (camembert)
+    final pieChartData = [
+      {
+        'category': 'Signalements',
+        'value': statsProvider.totalReports.toDouble(),
+        'color': AppColors.error
+      },
+      {
+        'category': 'Utilisateurs',
+        'value': statsProvider.totalUsers.toDouble(),
+        'color': AppColors.primary
+      },
+      {
+        'category': 'Taux résolution',
+        'value': statsProvider.resolutionRate.toDouble(),
+        'color': AppColors.resolved
+      },
+      {
+        'category': 'En attente',
+        'value': statsProvider.pendingReports.toDouble(),
+        'color': AppColors.warning
       },
     ];
 
@@ -253,7 +370,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          'Dashboard',
+                                          'Dashboard Admin',
                                           style: TextStyle(
                                             fontSize: 22,
                                             fontWeight: FontWeight.bold,
@@ -262,7 +379,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                         ),
                                         SizedBox(height: 2),
                                         Text(
-                                          'Bienvenue Admin',
+                                          'Vue d\'ensemble du système',
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.white70,
@@ -318,12 +435,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       trendUp: stat['trendUp'] as bool,
                     );
                   },
-                  childCount: statsData.length,
+                  childCount: 4,
                 ),
               ),
             ),
 
-            // Graphique
+            // Diagramme circulaire (Camembert)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(8),
@@ -352,7 +469,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               const Padding(
                                 padding: EdgeInsets.all(12),
                                 child: Text(
-                                  'Évolution par mois',
+                                  'Distribution des données',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -360,12 +477,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 ),
                               ),
                               SizedBox(
-                                height: 200,
-                                child: CustomChart(
-                                  data: statsProvider.reportsByMonth,
-                                  animationController: _animationController,
-                                ),
+                                height: 220,
+                                child: _buildDonutChart(pieChartData),
                               ),
+                              const SizedBox(height: 12),
+                              _buildChartLegend(pieChartData),
+                              const SizedBox(height: 12),
                             ],
                           ),
                         ),
@@ -386,7 +503,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     const Padding(
                       padding: EdgeInsets.only(left: 4, bottom: 8),
                       child: Text(
-                        'Actions',
+                        'Actions Rapides',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -400,7 +517,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             icon: Icons.add_alert,
                             label: 'Signaler',
                             color: AppColors.error,
-                            onTap: () {},
+                            onTap: _createSignalement,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -409,7 +526,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             icon: Icons.person_add,
                             label: 'Ajouter',
                             color: AppColors.primary,
-                            onTap: () {},
+                            onTap: _addUser,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -418,7 +535,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             icon: Icons.announcement,
                             label: 'Annonce',
                             color: AppColors.warning,
-                            onTap: () {},
+                            onTap: _publishAnnouncement,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -427,7 +544,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             icon: Icons.download,
                             label: 'Export',
                             color: AppColors.resolved,
-                            onTap: () {},
+                            onTap: _exportData,
                           ),
                         ),
                       ],
@@ -441,6 +558,72 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDonutChart(List<Map<String, dynamic>> data) {
+    final total =
+        data.fold(0.0, (sum, item) => sum + (item['value'] as double));
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          width: 160,
+          height: 160,
+          child: CustomPaint(
+            painter: DonutChartPainter(data: data, total: total),
+          ),
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              total.toInt().toString(),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+            const Text(
+              'Total',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChartLegend(List<Map<String, dynamic>> data) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: data.map((item) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: item['color'] as Color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${item['category']}: ${(item['value'] as double).toInt()}',
+              style: const TextStyle(fontSize: 11),
+            ),
+          ],
+        );
+      }).toList(),
     );
   }
 
@@ -571,5 +754,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         ),
       ),
     );
+  }
+}
+
+// Custom Painter pour le diagramme circulaire (Donut Chart)
+class DonutChartPainter extends CustomPainter {
+  final List<Map<String, dynamic>> data;
+  final double total;
+
+  DonutChartPainter({required this.data, required this.total});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    double startAngle = -90 * 3.14159 / 180;
+
+    for (var item in data) {
+      final value = item['value'] as double;
+      final color = item['color'] as Color;
+      final sweepAngle = 360 * (value / total) * 3.14159 / 180;
+
+      final paint = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 20
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
   }
 }

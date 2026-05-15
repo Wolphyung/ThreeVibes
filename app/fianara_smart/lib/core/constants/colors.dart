@@ -16,4 +16,6 @@ class AppColors {
     end: Alignment.bottomRight,
     colors: [Color(0xFF1A237E), Color(0xFF283593)],
   );
+
+  static Color? get textHint => null;
 }

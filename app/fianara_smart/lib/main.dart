@@ -40,18 +40,17 @@ import 'package:fianara_smart_city/services/socket_service.dart';
 // Modèles
 import 'models/announcement_model.dart';
 import 'models/report_model.dart';
-import 'models/notification_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive
   await Hive.initFlutter();
-  
+
   // Initialize Services
   await NotificationService.init();
   SocketService.init();
-  
+
   runApp(const MyApp());
 }
 

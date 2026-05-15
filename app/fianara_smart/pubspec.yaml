@@ -24,7 +24,7 @@ dependencies:
   http: ^1.1.0
   http_parser: ^4.0.0
   dio: ^5.4.0
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.2.2  # ✅ Pour le stockage du token
   connectivity_plus: ^6.0.0
   
   # Maps & Location
@@ -65,11 +65,3 @@ flutter:
   #   - assets/icons/
   #   - assets/animations/
   #   - assets/fonts/
-  
-  # Polices personnalisées (optionnel)
-  # fonts:
-  #   - family: CustomFont
-  #     fonts:
-  #       - asset: assets/fonts/CustomFont-Regular.ttf
-  #       - asset: assets/fonts/CustomFont-Bold.ttf
-  #         weight: 700

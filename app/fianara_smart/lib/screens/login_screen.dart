@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    const Text(
                       'Connectez-vous à votre compte',
                       style: TextStyle(
                         fontSize: 16,
@@ -202,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Pas encore de compte ? ',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
@@ -219,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               const SizedBox(height: 32),
-              Center(
+              const Center(
                 child: Text(
                   'Version 1.0.0',
                   style: TextStyle(

@@ -221,7 +221,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
         children: [
           // Header avec image de fond
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -293,12 +293,12 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                         },
                         decoration: InputDecoration(
                           hintText: 'Rechercher une annonce...',
-                          hintStyle: TextStyle(color: AppColors.textHint),
-                          prefixIcon:
-                              Icon(Icons.search, color: AppColors.primary),
+                          hintStyle: const TextStyle(color: AppColors.textHint),
+                          prefixIcon: const Icon(Icons.search,
+                              color: AppColors.primary),
                           suffixIcon: _searchQuery.isNotEmpty
                               ? IconButton(
-                                  icon: Icon(Icons.clear,
+                                  icon: const Icon(Icons.clear,
                                       color: AppColors.textHint),
                                   onPressed: () {
                                     setState(() {
@@ -377,7 +377,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.notifications_none,
                           size: 80,
                           color: AppColors.textHint,
@@ -387,7 +387,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                           _searchQuery.isEmpty
                               ? 'Aucune annonce disponible'
                               : 'Aucun résultat pour "$_searchQuery"',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: AppColors.textSecondary,
                           ),
@@ -521,7 +521,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                     const Spacer(),
                     Text(
                       announcement.formattedDate,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textHint,
                       ),
@@ -549,7 +549,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                       announcement.content,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         height: 1.4,
                         color: AppColors.textSecondary,
@@ -560,7 +560,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                     // Métadonnées
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.access_time,
                           size: 14,
                           color: AppColors.textHint,
@@ -568,13 +568,13 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                         const SizedBox(width: 6),
                         Text(
                           _getTimeAgo(announcement.publishedAt),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textHint,
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Icon(
+                        const Icon(
                           Icons.visibility,
                           size: 14,
                           color: AppColors.textHint,
@@ -582,13 +582,13 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                         const SizedBox(width: 6),
                         Text(
                           '${announcement.viewCount} vues',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textHint,
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Icon(
+                        const Icon(
                           Icons.favorite_border,
                           size: 14,
                           color: AppColors.textHint,
@@ -596,7 +596,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                         const SizedBox(width: 6),
                         Text(
                           '${announcement.likeCount}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textHint,
                           ),
@@ -623,7 +623,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                               AppColors.primary.withValues(alpha: 0.1),
                           child: Text(
                             announcement.publishedBy.initials,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: AppColors.primary,
@@ -633,7 +633,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen>
                         const SizedBox(width: 8),
                         Text(
                           announcement.publishedBy.fullName,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textSecondary,
                           ),

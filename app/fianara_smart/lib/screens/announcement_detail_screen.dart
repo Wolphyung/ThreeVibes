@@ -50,7 +50,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.calendar_today,
                   size: 16,
                   color: AppColors.textSecondary,
@@ -58,12 +58,12 @@ class AnnouncementDetailScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   announcement.formattedDate,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(width: 16),
-                Icon(
+                const Icon(
                   Icons.person_outline,
                   size: 16,
                   color: AppColors.textSecondary,
@@ -72,7 +72,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     announcement.publishedBy.fullName,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                     ),
                     overflow: TextOverflow.ellipsis,

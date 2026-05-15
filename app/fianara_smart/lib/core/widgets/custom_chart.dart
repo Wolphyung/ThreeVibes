@@ -22,7 +22,7 @@ class CustomChart extends StatelessWidget {
     // Prendre seulement les 6 derniers points
     final displayData = data.length > 6 ? data.sublist(data.length - 6) : data;
     final maxValue = displayData.reduce((a, b) => a > b ? a : b);
-    final chartHeight = 100.0;
+    const chartHeight = 100.0;
 
     return SizedBox(
       height: 150,
@@ -53,9 +53,9 @@ class CustomChart extends StatelessWidget {
                     Container(
                       height: barHeight,
                       width: 30,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppColors.primary,
-                        borderRadius: const BorderRadius.vertical(
+                        borderRadius: BorderRadius.vertical(
                           top: Radius.circular(4),
                         ),
                       ),

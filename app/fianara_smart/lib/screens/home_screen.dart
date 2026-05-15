@@ -74,7 +74,7 @@ class DashboardScreen extends StatelessWidget {
               // Header simple et élégant
               Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -83,7 +83,7 @@ class DashboardScreen extends StatelessWidget {
                       AppColors.primaryDark,
                     ],
                   ),
-                  borderRadius: const BorderRadius.only(
+                  borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(30),
                     bottomRight: Radius.circular(30),
                   ),
@@ -290,14 +290,14 @@ class DashboardScreen extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.all(40),
                       alignment: Alignment.center,
-                      child: Column(
+                      child: const Column(
                         children: [
                           Icon(
                             Icons.report_problem_outlined,
                             size: 60,
                             color: AppColors.textHint,
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Text(
                             'Aucun signalement',
                             style: TextStyle(
@@ -378,7 +378,7 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 11,
               color: AppColors.textSecondary,
             ),
@@ -451,7 +451,7 @@ class DashboardScreen extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.border, width: 1),
+        side: const BorderSide(color: AppColors.border, width: 1),
       ),
       child: InkWell(
         onTap: () {
@@ -496,7 +496,7 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       report.locationAddress,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textSecondary,
                       ),
@@ -506,7 +506,7 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       report.timeAgo,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 10,
                         color: AppColors.textHint,
                       ),

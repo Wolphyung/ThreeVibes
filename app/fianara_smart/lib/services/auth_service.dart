@@ -1,7 +1,6 @@
 // lib/services/auth_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../core/api_config.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -13,7 +12,9 @@ class AuthService {
 
   // Login
   static Future<Map<String, dynamic>> login(
-      String email, String password) async {
+    String email,
+    String password,
+  ) async {
     try {
       // Vérifier d'abord si c'est le compte admin local
       if (email == adminEmail && password == adminPassword) {
@@ -45,10 +46,7 @@ class AuthService {
       final response = await http.post(
         Uri.parse('$baseUrl/users/login'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-          'mdp': password,
-        }),
+        body: json.encode({'email': email, 'mdp': password}),
       );
 
       print('Login Status: ${response.statusCode}');
@@ -62,10 +60,7 @@ class AuthService {
           'user': UserModel.fromJson(data['user']),
         };
       } else if (response.statusCode == 401) {
-        return {
-          'success': false,
-          'error': 'Email ou mot de passe incorrect',
-        };
+        return {'success': false, 'error': 'Email ou mot de passe incorrect'};
       } else {
         return {
           'success': false,
@@ -73,16 +68,14 @@ class AuthService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'Erreur de connexion: $e',
-      };
+      return {'success': false, 'error': 'Erreur de connexion: $e'};
     }
   }
 
   // Register
   static Future<Map<String, dynamic>> register(
-      Map<String, dynamic> userData) async {
+    Map<String, dynamic> userData,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/users/register'),
@@ -94,10 +87,7 @@ class AuthService {
       print('Register Response: ${response.body}');
 
       if (response.statusCode == 201) {
-        return {
-          'success': true,
-          'message': 'Utilisateur créé avec succès',
-        };
+        return {'success': true, 'message': 'Utilisateur créé avec succès'};
       } else if (response.statusCode == 400) {
         final data = json.decode(response.body);
         return {
@@ -111,10 +101,7 @@ class AuthService {
         };
       }
     } catch (e) {
-      return {
-        'success': false,
-        'error': 'Erreur de connexion: $e',
-      };
+      return {'success': false, 'error': 'Erreur de connexion: $e'};
     }
   }
 }

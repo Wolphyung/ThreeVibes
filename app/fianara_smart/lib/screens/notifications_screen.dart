@@ -79,9 +79,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     ],
                   ),
                   onTap: () {
-                    if (notification.type == 'SIGNALEMENT' && notification.data != null) {
+                    if (notification.type == 'SIGNALEMENT' &&
+                        notification.data != null) {
                       try {
-                        final signalementData = notification.data!['signalement'];
+                        final signalementData =
+                            notification.data!['signalement'];
                         if (signalementData != null) {
                           final report = ReportModel.fromJson(signalementData);
                           Navigator.pushNamed(

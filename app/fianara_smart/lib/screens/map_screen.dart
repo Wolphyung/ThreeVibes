@@ -62,9 +62,8 @@ class _MapScreenState extends State<MapScreen> {
         final List<dynamic> reportsData = data['data'] ?? [];
         if (mounted) {
           setState(() {
-            _nearbyReports = reportsData
-                .map((json) => ReportModel.fromJson(json))
-                .toList();
+            _nearbyReports =
+                reportsData.map((json) => ReportModel.fromJson(json)).toList();
           });
         }
       }

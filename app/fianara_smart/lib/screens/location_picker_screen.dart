@@ -21,7 +21,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedLocation = widget.initialLocation ?? const LatLng(-21.4536, 47.0857); // Fianarantsoa
+    _selectedLocation = widget.initialLocation ??
+        const LatLng(-21.4536, 47.0857); // Fianarantsoa
     _getAddress(_selectedLocation);
   }
 
@@ -34,7 +35,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
         List<String> parts = [];
-        if (place.street != null && place.street!.isNotEmpty && !place.street!.contains('+')) {
+        if (place.street != null &&
+            place.street!.isNotEmpty &&
+            !place.street!.contains('+')) {
           parts.add(place.street!);
         }
         if (place.subLocality != null && place.subLocality!.isNotEmpty) {
@@ -43,9 +46,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         if (place.locality != null && place.locality!.isNotEmpty) {
           parts.add(place.locality!);
         }
-        
+
         setState(() {
-          _currentAddress = parts.isNotEmpty ? parts.join(', ') : 'Adresse localisée';
+          _currentAddress =
+              parts.isNotEmpty ? parts.join(', ') : 'Adresse localisée';
         });
       }
     } catch (e) {
@@ -68,7 +72,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 'address': _currentAddress,
               });
             },
-            child: const Text('VALIDER', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+            child: const Text('VALIDER',
+                style: TextStyle(
+                    color: AppColors.primary, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -117,15 +123,19 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10),
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.1), blurRadius: 10),
                 ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Lieu sélectionné :', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text('Lieu sélectionné :',
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 4),
-                  Text(_currentAddress, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                  Text(_currentAddress,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
                 ],
               ),
             ),

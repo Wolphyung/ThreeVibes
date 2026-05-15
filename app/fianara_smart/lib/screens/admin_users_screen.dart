@@ -49,10 +49,12 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     if (_selectedRole != 'Tous') {
       filtered = filtered.where((user) {
         if (_selectedRole == 'Citoyens') return user.role == UserRole.citoyen;
-        if (_selectedRole == 'Techniciens')
+        if (_selectedRole == 'Techniciens') {
           return user.role == UserRole.technicien;
-        if (_selectedRole == 'Administrateurs')
+        }
+        if (_selectedRole == 'Administrateurs') {
           return user.role == UserRole.admin;
+        }
         return true;
       }).toList();
     }
@@ -212,7 +214,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           children: [
                             Text(
                               '${filteredUsers.length} résultat(s) trouvé(s)',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary,
                               ),
@@ -351,7 +353,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             ),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -382,7 +384,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               Container(
                 width: 50,
                 height: 50,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: AppColors.primaryGradient,
                   shape: BoxShape.circle,
                 ),
@@ -412,7 +414,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     const SizedBox(height: 4),
                     Text(
                       user.email,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -463,7 +465,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 children: [
                   Text(
                     'CIN: ${user.numCIN}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 10,
                       color: AppColors.textSecondary,
                     ),
@@ -471,7 +473,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   const SizedBox(height: 4),
                   Text(
                     user.createdAt.toString().split(' ')[0],
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 10,
                       color: AppColors.textSecondary,
                     ),

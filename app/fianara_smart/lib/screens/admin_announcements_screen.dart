@@ -18,7 +18,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
   final List<String> _filters = ['Toutes', 'En attente', 'Validée', 'Rejetée'];
 
   // Annonces créées par l'admin
-  List<Map<String, dynamic>> _announcements = [
+  final List<Map<String, dynamic>> _announcements = [
     {
       'id': '1',
       'title': 'Coupure d\'eau programmée',
@@ -48,7 +48,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
   ];
 
   // Annonces des utilisateurs en attente de validation
-  List<Map<String, dynamic>> _userAnnouncements = [
+  final List<Map<String, dynamic>> _userAnnouncements = [
     {
       'id': 'u1',
       'title': 'Incendie dans le quartier',
@@ -158,7 +158,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              _showSearchBar();
+              _showSearchPopup();
             },
           ),
           IconButton(
@@ -171,10 +171,6 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
       ),
       body: Column(
         children: [
-          // Barre de recherche
-          if (_searchQuery.isNotEmpty || _searchController.text.isNotEmpty)
-            _buildSearchBar(),
-
           // Filtres
           Container(
             height: 45,
@@ -256,6 +252,56 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
 
           const SizedBox(height: 12),
 
+          // Affichage du résultat de la recherche si une recherche est active
+          if (_searchQuery.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search,
+                              size: 16, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Résultats pour : "$_searchQuery" (${_filteredAnnouncements.length})',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _searchQuery = '';
+                                _searchController.clear();
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, size: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          const SizedBox(height: 8),
+
           // Liste des annonces
           Expanded(
             child: _filteredAnnouncements.isEmpty
@@ -264,15 +310,29 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.notifications_none,
+                          _searchQuery.isNotEmpty
+                              ? Icons.search_off
+                              : Icons.notifications_none,
                           size: 64,
                           color: Colors.grey[400],
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Aucune annonce',
+                          _searchQuery.isNotEmpty
+                              ? 'Aucun résultat pour "$_searchQuery"'
+                              : 'Aucune annonce',
                           style: TextStyle(color: Colors.grey[600]),
                         ),
+                        if (_searchQuery.isNotEmpty)
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _searchQuery = '';
+                                _searchController.clear();
+                              });
+                            },
+                            child: const Text('Effacer la recherche'),
+                          ),
                       ],
                     ),
                   )
@@ -287,6 +347,159 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showSearchPopup() {
+    final tempController = TextEditingController(text: _searchQuery);
+    String tempSearchQuery = _searchQuery;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Rechercher',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: tempController,
+                    autofocus: true,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        tempSearchQuery = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Titre, contenu ou auteur...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: tempController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                tempController.clear();
+                                setDialogState(() {
+                                  tempSearchQuery = '';
+                                });
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: AppColors.background,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Suggestions de recherche rapide
+                  if (tempSearchQuery.isEmpty)
+                    Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Recherches rapides',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            _buildSearchChip('Urgente'),
+                            _buildSearchChip('Élevée'),
+                            _buildSearchChip('Incendie'),
+                            _buildSearchChip('Eau'),
+                            _buildSearchChip('Jean Dupont'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Annuler'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = tempSearchQuery;
+                              _searchController.text = tempSearchQuery;
+                            });
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Rechercher'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSearchChip(String label) {
+    return ActionChip(
+      label: Text(label),
+      onPressed: () {
+        setState(() {
+          _searchQuery = label;
+          _searchController.text = label;
+        });
+        Navigator.pop(context);
+      },
+      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+      labelStyle: TextStyle(color: AppColors.primary),
     );
   }
 
@@ -306,77 +519,13 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
         ),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 11,
             color: AppColors.textSecondary,
           ),
         ),
       ],
     );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white,
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: 'Rechercher une annonce...',
-                prefixIcon: const Icon(Icons.search, size: 20),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 20),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: AppColors.background,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _searchQuery = '';
-                _searchController.clear();
-              });
-            },
-            child: const Text('Annuler'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSearchBar() {
-    setState(() {
-      _searchQuery = '';
-      _searchController.clear();
-    });
-    Future.delayed(const Duration(milliseconds: 100), () {
-      FocusScope.of(context).requestFocus();
-    });
   }
 
   Widget _buildAnnouncementCard(Map<String, dynamic> announcement) {
@@ -441,7 +590,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                                 color: AppColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: Text(
+                              child: const Text(
                                 'Utilisateur',
                                 style: TextStyle(
                                   fontSize: 9,
@@ -455,7 +604,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         '${announcement['date']} • Par ${announcement['createdBy']}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
                           color: AppColors.textSecondary,
                         ),
@@ -484,7 +633,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
             const SizedBox(height: 12),
             Text(
               announcement['content'],
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
               ),
@@ -505,11 +654,12 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.email, size: 12, color: AppColors.warning),
+                          const Icon(Icons.email,
+                              size: 12, color: AppColors.warning),
                           const SizedBox(width: 4),
                           Text(
                             announcement['userEmail'],
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 11, color: AppColors.warning),
                           ),
                         ],
@@ -517,11 +667,12 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.phone, size: 12, color: AppColors.warning),
+                          const Icon(Icons.phone,
+                              size: 12, color: AppColors.warning),
                           const SizedBox(width: 4),
                           Text(
                             announcement['userPhone'],
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 11, color: AppColors.warning),
                           ),
                         ],
@@ -614,14 +765,14 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                           color: AppColors.resolved.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Row(
+                        child: const Row(
                           children: [
                             Icon(
                               Icons.check_circle,
                               size: 16,
                               color: AppColors.resolved,
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Text(
                               'Validée',
                               style: TextStyle(
@@ -673,12 +824,12 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info, size: 14, color: AppColors.error),
+                      const Icon(Icons.info, size: 14, color: AppColors.error),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Motif du rejet: ${announcement['rejectionReason']}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.error,
                           ),
@@ -810,7 +961,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: selectedPriority,
+                    initialValue: selectedPriority,
                     decoration: const InputDecoration(
                       labelText: 'Priorité',
                       prefixIcon: Icon(Icons.priority_high),
@@ -919,7 +1070,7 @@ class _AdminAnnouncementsScreenState extends State<AdminAnnouncementsScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: selectedPriority,
+                    initialValue: selectedPriority,
                     decoration: const InputDecoration(
                       labelText: 'Priorité',
                       prefixIcon: Icon(Icons.priority_high),

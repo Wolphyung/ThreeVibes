@@ -34,7 +34,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
   double? _longitude;
   String _address = '';
   XFile? _imageFile;
-  List<XFile> _images = [];
+  final List<XFile> _images = [];
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -559,7 +559,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                                     _latitude != null
                                         ? 'Position sélectionnée'
                                         : 'Sélectionner sur la carte',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                       color: AppColors.primary,
@@ -569,7 +569,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                                     const SizedBox(height: 4),
                                     Text(
                                       _address,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         color: AppColors.textSecondary,
                                       ),
@@ -581,7 +581,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                                     const SizedBox(height: 2),
                                     Text(
                                       'Lat: ${_latitude!.toStringAsFixed(4)}, Long: ${_longitude!.toStringAsFixed(4)}',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 10,
                                         color: AppColors.textHint,
                                       ),
@@ -590,7 +590,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                                 ],
                               ),
                             ),
-                            Icon(
+                            const Icon(
                               Icons.chevron_right,
                               color: AppColors.textHint,
                             ),
@@ -722,7 +722,7 @@ class _ReportFormScreenState extends State<ReportFormScreen>
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         minimumSize: const Size(double.infinity, 0),
-                        side: BorderSide(color: AppColors.border),
+                        side: const BorderSide(color: AppColors.border),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

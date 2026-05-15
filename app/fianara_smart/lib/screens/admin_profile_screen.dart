@@ -108,7 +108,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
               ),
               child: Text(
                 _adminInfo['role']!,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.primary,
                   fontWeight: FontWeight.w500,
@@ -240,7 +240,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   foregroundColor: AppColors.error,
-                  side: BorderSide(color: AppColors.error),
+                  side: const BorderSide(color: AppColors.error),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -276,7 +276,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             ),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -301,7 +301,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
               color: AppColors.textSecondary,
             ),
@@ -337,7 +337,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             children: [
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.textSecondary,
                 ),

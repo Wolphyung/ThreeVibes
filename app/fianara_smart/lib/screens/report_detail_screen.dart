@@ -69,7 +69,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
               children: [
                 Text(
                   'RÉF: $refNumber',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
@@ -104,7 +104,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             const SizedBox(height: 8),
             Text(
               'Signalé le ${report.formattedDate}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
               ),
@@ -120,7 +120,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
             const SizedBox(height: 8),
             Text(
               report.description,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 15,
                 height: 1.4,
                 color: AppColors.textPrimary,
@@ -147,7 +147,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on,
+                      const Icon(Icons.location_on,
                           size: 18, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Expanded(
@@ -163,7 +163,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     padding: const EdgeInsets.only(left: 26),
                     child: Text(
                       'Lat: ${report.latitude.toStringAsFixed(4)}, Long: ${report.longitude.toStringAsFixed(4)}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textHint,
                       ),
@@ -289,7 +289,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                 const SizedBox(height: 2),
                 Text(
                   date,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textHint,
                   ),
@@ -304,7 +304,7 @@ class _ReportDetailScreenState extends State<ReportDetailScreen> {
                     ),
                     child: Text(
                       comment,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                       ),

@@ -154,7 +154,7 @@ class _ReportsScreenState extends State<ReportsScreen>
         children: [
           // Header avec dégradé
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -226,12 +226,12 @@ class _ReportsScreenState extends State<ReportsScreen>
                         },
                         decoration: InputDecoration(
                           hintText: 'Rechercher un signalement...',
-                          hintStyle: TextStyle(color: AppColors.textHint),
-                          prefixIcon:
-                              Icon(Icons.search, color: AppColors.primary),
+                          hintStyle: const TextStyle(color: AppColors.textHint),
+                          prefixIcon: const Icon(Icons.search,
+                              color: AppColors.primary),
                           suffixIcon: _searchQuery.isNotEmpty
                               ? IconButton(
-                                  icon: Icon(Icons.clear,
+                                  icon: const Icon(Icons.clear,
                                       color: AppColors.textHint),
                                   onPressed: () {
                                     setState(() {
@@ -342,7 +342,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.report_problem_outlined,
                           size: 80,
                           color: AppColors.textHint,
@@ -352,7 +352,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                           _searchQuery.isEmpty
                               ? 'Aucun signalement pour le moment'
                               : 'Aucun résultat pour "$_searchQuery"',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             color: AppColors.textSecondary,
                           ),
@@ -450,7 +450,7 @@ class _ReportsScreenState extends State<ReportsScreen>
             ),
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
                 color: AppColors.textSecondary,
               ),
@@ -512,7 +512,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                       children: [
                         Text(
                           refNumber,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textHint,
                             fontWeight: FontWeight.w500,
@@ -556,7 +556,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                 report.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
                   height: 1.4,
@@ -567,7 +567,7 @@ class _ReportsScreenState extends State<ReportsScreen>
               // Localisation et date
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.location_on_outlined,
                     size: 14,
                     color: AppColors.textHint,
@@ -576,7 +576,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                   Expanded(
                     child: Text(
                       report.locationAddress,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textHint,
                       ),
@@ -585,7 +585,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Icon(
+                  const Icon(
                     Icons.access_time,
                     size: 14,
                     color: AppColors.textHint,
@@ -593,7 +593,7 @@ class _ReportsScreenState extends State<ReportsScreen>
                   const SizedBox(width: 4),
                   Text(
                     report.timeAgo,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.textHint,
                     ),
@@ -634,11 +634,11 @@ class _ReportsScreenState extends State<ReportsScreen>
                     color: AppColors.resolved.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
                       Icon(Icons.check_circle,
                           color: AppColors.resolved, size: 16),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Signalement résolu avec succès',

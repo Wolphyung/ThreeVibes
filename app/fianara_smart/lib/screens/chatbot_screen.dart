@@ -105,7 +105,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             Container(
               width: 8,
               height: 8,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.success,
                 shape: BoxShape.circle,
               ),
@@ -266,7 +266,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       curve: Curves.easeInOut,
       width: 8,
       height: 8,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.primary,
         shape: BoxShape.circle,
       ),

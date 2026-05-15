@@ -26,7 +26,7 @@ class ProfileScreen extends StatelessWidget {
                 // Header avec photo et informations
                 SliverToBoxAdapter(
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -35,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
                           AppColors.primaryLight,
                         ],
                       ),
-                      borderRadius: const BorderRadius.only(
+                      borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(30),
                         bottomRight: Radius.circular(30),
                       ),
@@ -90,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
@@ -98,10 +98,10 @@ class ProfileScreen extends StatelessWidget {
                                   size: 16,
                                   color: Colors.white,
                                 ),
-                                const SizedBox(width: 6),
+                                SizedBox(width: 6),
                                 Text(
                                   'Citoyen Vérifié',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,
@@ -343,7 +343,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
@@ -414,7 +414,7 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -431,7 +431,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildDivider() {
-    return Divider(
+    return const Divider(
       height: 1,
       thickness: 1,
       color: AppColors.border,
@@ -537,7 +537,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '© ${DateTime.now().year} Fianara Smart City',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
                 color: AppColors.textHint,
               ),
@@ -682,11 +682,11 @@ class ProfileScreen extends StatelessWidget {
                       color: AppColors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
+                    child: const Row(
                       children: [
                         Icon(Icons.info_outline, color: AppColors.warning),
-                        const SizedBox(width: 12),
-                        const Expanded(
+                        SizedBox(width: 12),
+                        Expanded(
                           child: Text(
                             'Utilisez au moins 8 caractères avec lettres, chiffres et symboles',
                             style: TextStyle(fontSize: 11),
@@ -815,11 +815,11 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.logout, color: AppColors.error, size: 28),
-            const SizedBox(width: 12),
-            const Text(
+            SizedBox(width: 12),
+            Text(
               'Déconnexion',
               style: TextStyle(
                 fontSize: 20,
@@ -842,11 +842,11 @@ class ProfileScreen extends StatelessWidget {
                 color: AppColors.warning.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
+              child: const Row(
                 children: [
                   Icon(Icons.info_outline, color: AppColors.warning, size: 20),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  SizedBox(width: 12),
+                  Expanded(
                     child: Text(
                       'Vous devrez vous reconnecter pour accéder à votre compte',
                       style: TextStyle(fontSize: 12),
