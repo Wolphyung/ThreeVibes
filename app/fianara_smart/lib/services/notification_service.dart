@@ -26,14 +26,6 @@ class NotificationService {
     final box = await Hive.openBox<AppNotification>(_boxName);
     print('📦 Hive Notification Box opened. Total: ${box.length}');
 
-    // 2. Check for missed notifications
-    final unreadCount = box.values.where((n) => !n.isRead).length;
-    if (unreadCount > 0) {
-      Future.delayed(const Duration(seconds: 2), () {
-        showSnackBar('Vous avez $unreadCount nouvelles notifications en attente.');
-      });
-    }
-
     // 3. Init Local Notifications
     if (!kIsWeb) {
       const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -65,7 +57,8 @@ class NotificationService {
         notification.hashCode,
         notification.title,
         notification.message,
-        const NotificationDetails(android: androidDetails, iOS: DarwinNotificationDetails()),
+        const NotificationDetails(
+            android: androidDetails, iOS: DarwinNotificationDetails()),
       );
     }
   }
@@ -83,7 +76,8 @@ class NotificationService {
           children: [
             Text(
               notification.title,
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.white),
             ),
             Text(
               notification.message,
@@ -98,7 +92,8 @@ class NotificationService {
             onPressed: () {
               state.hideCurrentMaterialBanner();
               // Redirect to Signalement Detail
-              if (notification.type == 'SIGNALEMENT' && notification.data != null) {
+              if (notification.type == 'SIGNALEMENT' &&
+                  notification.data != null) {
                 try {
                   final signalementData = notification.data!['signalement'];
                   if (signalementData != null) {
@@ -113,11 +108,14 @@ class NotificationService {
                 }
               }
             },
-            child: const Text('VOIR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('VOIR',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () => state.hideCurrentMaterialBanner(),
-            child: const Text('FERMER', style: TextStyle(color: Colors.white70)),
+            child:
+                const Text('FERMER', style: TextStyle(color: Colors.white70)),
           ),
         ],
       ),
@@ -142,19 +140,27 @@ class NotificationService {
 
   static IconData _getIconForType(String? type) {
     switch (type) {
-      case 'SIGNALEMENT': return Icons.report_problem;
-      case 'ALERTE': return Icons.warning;
-      case 'ANNONCE': return Icons.announcement;
-      default: return Icons.notifications;
+      case 'SIGNALEMENT':
+        return Icons.report_problem;
+      case 'ALERTE':
+        return Icons.warning;
+      case 'ANNONCE':
+        return Icons.announcement;
+      default:
+        return Icons.notifications;
     }
   }
 
   static Color _getColorForType(String? type) {
     switch (type) {
-      case 'SIGNALEMENT': return Colors.orange.shade800;
-      case 'ALERTE': return Colors.red.shade800;
-      case 'ANNONCE': return Colors.blue.shade800;
-      default: return Colors.indigo;
+      case 'SIGNALEMENT':
+        return Colors.orange.shade800;
+      case 'ALERTE':
+        return Colors.red.shade800;
+      case 'ANNONCE':
+        return Colors.blue.shade800;
+      default:
+        return Colors.indigo;
     }
   }
 

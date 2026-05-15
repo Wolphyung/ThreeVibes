@@ -71,8 +71,10 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-      codeUtilisateur:
-          json['codeUtilisateur']?.toString() ?? json['id']?.toString() ?? '',
+      codeUtilisateur: json['codeUtilisateur']?.toString() ??
+          json['codeutilisateur']?.toString() ??
+          json['id']?.toString() ??
+          '',
       nom: json['nom']?.toString() ?? '',
       prenoms: json['prenoms']?.toString() ?? '',
       numCIN: json['numCIN']?.toString() ?? '',
@@ -92,7 +94,8 @@ class UserModel {
           : null,
       isActive: json['isActive'] ?? true,
       token: json['token']?.toString(),
-      codeFonction: json['codeFonction']?.toString() ?? json['codefonction']?.toString(),
+      codeFonction:
+          json['codeFonction']?.toString() ?? json['codefonction']?.toString(),
     );
   }
 

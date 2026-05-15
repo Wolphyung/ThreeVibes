@@ -31,6 +31,7 @@ import 'screens/admin_users_screen.dart';
 import 'screens/admin_announcements_screen.dart';
 import 'screens/admin_profile_screen.dart';
 import 'screens/notifications_screen.dart';
+import 'screens/location_picker_screen.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fianara_smart_city/services/notification_service.dart';
@@ -97,6 +98,7 @@ class MyApp extends StatelessWidget {
               '/report-form': (context) => const ReportFormScreen(),
               '/profile': (context) => const ProfileScreen(),
               '/notifications': (context) => const NotificationsScreen(),
+              '/location-picker': (context) => const LocationPickerScreen(),
 
               // Routes Admin
               '/admin': (context) => const admin.AdminHomeScreen(),
