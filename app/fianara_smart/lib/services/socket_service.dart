@@ -1,6 +1,6 @@
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:fianara_smart_city/models/notification_model.dart';
-import 'package:fianara_smart_city/services/notification_service.dart';
+import '../models/notification_model.dart';
+import 'notification_service.dart';
 
 class SocketService {
   static IO.Socket? _socket;

@@ -1,4 +1,4 @@
-import 'package:fianara_smart_city/constants/colors.dart';
+import '../../../../constants/colors.dart';
 import 'package:flutter/material.dart';
 
 class CustomChart extends StatelessWidget {

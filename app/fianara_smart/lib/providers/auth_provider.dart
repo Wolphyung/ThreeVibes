@@ -2,9 +2,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fianara_smart_city/models/user_model.dart';
-import 'package:fianara_smart_city/services/auth_service.dart';
-import 'package:fianara_smart_city/services/socket_service.dart';
+import '../models/user_model.dart';
+import '../services/auth_service.dart';
+import '../services/socket_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   UserModel? _currentUser;

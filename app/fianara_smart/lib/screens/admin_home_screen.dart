@@ -424,6 +424,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                         const SizedBox(width: 6),
                         Expanded(
                           child: _buildMiniActionCard(
+                            icon: Icons.folder,
+                            label: 'Dossiers',
+                            color: AppColors.primary,
+                            onTap: () {
+                              Navigator.pushNamed(context, '/admin-dossiers');
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: _buildMiniActionCard(
                             icon: Icons.download,
                             label: 'Export',
                             color: AppColors.resolved,

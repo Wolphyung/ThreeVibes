@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fianara_smart_city/services/notification_service.dart';
-import 'package:fianara_smart_city/models/notification_model.dart';
-import 'package:fianara_smart_city/models/report_model.dart';
+import '../services/notification_service.dart';
+import '../models/notification_model.dart';
+import '../models/report_model.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatefulWidget {

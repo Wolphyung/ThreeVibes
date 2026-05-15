@@ -10,6 +10,7 @@ import 'providers/theme_provider.dart';
 import 'providers/admin_provider.dart';
 import 'providers/stats_provider.dart';
 import 'providers/admin_users_provider.dart';
+import 'providers/instruction_dossier_provider.dart';
 
 // Écrans principaux
 import 'screens/splash_screen.dart';
@@ -23,6 +24,8 @@ import 'screens/reports_screen.dart';
 import 'screens/report_form_screen.dart';
 import 'screens/report_detail_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/instruction_dossier_list_screen.dart';
+import 'screens/admin_instruction_dossier_screen.dart';
 
 // Écrans Admin - Utilisation de préfixes pour éviter les conflits
 import 'screens/admin_home_screen.dart' as admin;
@@ -34,8 +37,8 @@ import 'screens/notifications_screen.dart';
 import 'screens/location_picker_screen.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:fianara_smart_city/services/notification_service.dart';
-import 'package:fianara_smart_city/services/socket_service.dart';
+import 'services/notification_service.dart';
+import 'services/socket_service.dart';
 
 // Modèles
 import 'models/announcement_model.dart';
@@ -72,6 +75,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => StatsProvider()),
         ChangeNotifierProvider(create: (_) => AdminUsersProvider()),
+        ChangeNotifierProvider(create: (_) => InstructionDossierProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -106,7 +110,9 @@ class MyApp extends StatelessWidget {
               '/admin/users': (context) => const AdminUsersScreen(),
               '/admin/announcements': (context) =>
                   const AdminAnnouncementsScreen(),
-              '/admin/profile': (context) => const AdminProfileScreen(),
+               '/admin/profile': (context) => const AdminProfileScreen(),
+              '/dossiers': (context) => const InstructionDossierListScreen(),
+              '/admin-dossiers': (context) => const AdminInstructionDossierScreen(),
             },
             onGenerateRoute: (settings) {
               if (settings.name == '/announcement-detail') {

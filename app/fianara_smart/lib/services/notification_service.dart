@@ -4,7 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/notification_model.dart';
 
-import 'package:fianara_smart_city/models/report_model.dart';
+import '../models/report_model.dart';
 
 class NotificationService {
   static final GlobalKey<NavigatorState> navigatorKey =
