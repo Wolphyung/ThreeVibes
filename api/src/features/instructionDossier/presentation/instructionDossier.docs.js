@@ -7,7 +7,7 @@
 
 /**
  * @swagger
- * /instruction-dossier:
+ * /dossiers:
  *   get:
  *     tags: [Instruction Dossier]
  *     summary: Get all dossiers
@@ -17,12 +17,16 @@
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 dossiers:
- *                   type: array
- *                   items:
- *                     type: object
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   codedossier:
+ *                     type: string
+ *                   nomdossier:
+ *                     type: string
+ *                   instructions:
+ *                     type: string
  *   post:
  *     tags: [Instruction Dossier]
  *     summary: Create a new dossier
@@ -33,31 +37,20 @@
  *           schema:
  *             type: object
  *             required:
- *               - codedossier
- *               - typeinstruction
- *               - descriptioninstruction
+ *               - nomdossier
  *             properties:
- *               codedossier:
+ *               nomdossier:
  *                 type: string
- *               typeinstruction:
- *                 type: string
- *               descriptioninstruction:
- *                 type: string
- *               datereception:
- *                 type: string
- *                 format: date-time
- *               etatinstruction:
+ *               instructions:
  *                 type: string
  *     responses:
  *       201:
  *         description: Dossier créé avec succès
- *       400:
- *         description: Code dossier déjà utilisé
  */
 
 /**
  * @swagger
- * /instruction-dossier/{id}:
+ * /dossiers/{id}:
  *   get:
  *     tags: [Instruction Dossier]
  *     summary: Get a dossier by ID
@@ -88,11 +81,9 @@
  *           schema:
  *             type: object
  *             properties:
- *               typeinstruction:
+ *               nomdossier:
  *                 type: string
- *               descriptioninstruction:
- *                 type: string
- *               etatinstruction:
+ *               instructions:
  *                 type: string
  *     responses:
  *       200:

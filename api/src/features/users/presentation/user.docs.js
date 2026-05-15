@@ -219,7 +219,112 @@
  *                 type: string
  *     responses:
  *       200:
- *         description: Mot de passe réinitialisé avec succès
+ *         description: Mot de passe rï¿½initialisï¿½ avec succï¿½s
  *       400:
- *         description: Token invalide ou expiré
+ *         description: Token invalide ou expirï¿½
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     tags: [Users]
+ *     summary: List all users
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Search term (name, prename or email)
+ *     responses:
+ *       200:
+ *         description: List of users
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Fonctions
+ *   description: Job functions management
+ */
+
+/**
+ * @swagger
+ * /users/fonctions:
+ *   get:
+ *     tags: [Fonctions]
+ *     summary: List all functions
+ *     responses:
+ *       200:
+ *         description: List of functions
+ *   post:
+ *     tags: [Fonctions]
+ *     summary: Create a new function
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nomfonction
+ *             properties:
+ *               nomfonction:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Function created
+ */
+
+/**
+ * @swagger
+ * /users/fonctions/{id}:
+ *   get:
+ *     tags: [Fonctions]
+ *     summary: Get function by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Function found
+ *   put:
+ *     tags: [Fonctions]
+ *     summary: Update a function
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nomfonction
+ *             properties:
+ *               nomfonction:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Function updated
+ *   delete:
+ *     tags: [Fonctions]
+ *     summary: Delete a function
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Function deleted
  */

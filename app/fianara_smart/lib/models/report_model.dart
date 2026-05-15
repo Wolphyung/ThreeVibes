@@ -144,12 +144,15 @@ class ReportModel {
   String get timeAgo {
     final difference = DateTime.now().difference(createdAt);
     if (difference.inDays > 7) return formattedDate;
-    if (difference.inDays > 0)
+    if (difference.inDays > 0) {
       return 'Il y a ${difference.inDays} jour${difference.inDays > 1 ? 's' : ''}';
-    if (difference.inHours > 0)
+    }
+    if (difference.inHours > 0) {
       return 'Il y a ${difference.inHours} heure${difference.inHours > 1 ? 's' : ''}';
-    if (difference.inMinutes > 0)
+    }
+    if (difference.inMinutes > 0) {
       return 'Il y a ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''}';
+    }
     return 'À l\'instant';
   }
 }

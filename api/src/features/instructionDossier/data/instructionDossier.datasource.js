@@ -6,12 +6,27 @@ const findAll = () =>
 const findById = (id) =>
   db.query('SELECT * FROM instruction_dossier WHERE codedossier = $1', [id]);
 
-const create = (dossier) =>
-  db.query(
-    `INSERT INTO instruction_dossier (nomdossier, instructions)
-     VALUES ($1, $2) RETURNING *`,
-    [dossier.nomdossier, dossier.instructions]
+const generateCodeDossier = async () => {
+  const result = await db.query('SELECT codedossier FROM instruction_dossier ORDER BY codedossier DESC LIMIT 1');
+  let nextNumber = 1;
+
+  if (result.rows.length > 0) {
+    const lastCode = result.rows[0].codedossier;
+    const lastNumber = parseInt(lastCode.replace("D", ""));
+    nextNumber = lastNumber + 1;
+  }
+
+  return `D${nextNumber.toString().padStart(4, "0")}`;
+};
+
+const create = async (dossier) => {
+  const codeDossier = await generateCodeDossier();
+  return db.query(
+    `INSERT INTO instruction_dossier (codedossier, nomdossier, instructions)
+     VALUES ($1, $2, $3) RETURNING *`,
+    [codeDossier, dossier.nomdossier, dossier.instructions]
   );
+};
 
 const update = (id, dossier) =>
   db.query(

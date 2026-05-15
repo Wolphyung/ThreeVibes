@@ -1,4 +1,4 @@
-const datasource = require('../data/user.datasource');
+const datasource = require("../data/user.datasource");
 
 const findByEmail = async (email) => {
   const result = await datasource.findByEmail(email);
@@ -38,4 +38,51 @@ const updatePassword = async (id, hashedPassword) => {
   return await datasource.updatePassword(id, hashedPassword);
 };
 
-module.exports = { findByEmail, findById, create, update, remove, saveResetToken, findByResetToken, updatePassword };
+const findAll = async (q) => {
+  const result = await datasource.findAll(q);
+  return result.rows;
+};
+
+// --- FONCTION CRUD ---
+
+const findAllFonctions = async () => {
+  const result = await datasource.findAllFonctions();
+  return result.rows;
+};
+
+const findFonctionById = async (id) => {
+  const result = await datasource.findFonctionById(id);
+  return result.rows[0] || null;
+};
+
+const createFonction = async (nomfonction) => {
+  const result = await datasource.createFonction(nomfonction);
+  return result.rows[0];
+};
+
+const updateFonction = async (id, nomfonction) => {
+  const result = await datasource.updateFonction(id, nomfonction);
+  return result.rows[0] || null;
+};
+
+const deleteFonction = async (id) => {
+  const result = await datasource.deleteFonction(id);
+  return result.rows[0] || null;
+};
+
+module.exports = {
+  findByEmail,
+  findById,
+  create,
+  update,
+  remove,
+  saveResetToken,
+  findByResetToken,
+  updatePassword,
+  findAll,
+  findAllFonctions,
+  findFonctionById,
+  createFonction,
+  updateFonction,
+  deleteFonction,
+};
