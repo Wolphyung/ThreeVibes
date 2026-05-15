@@ -76,6 +76,7 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             title: 'Fianara Smart City',
+            navigatorKey: NotificationService.navigatorKey,
             scaffoldMessengerKey: NotificationService.messengerKey,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,

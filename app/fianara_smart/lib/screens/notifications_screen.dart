@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fianara_smart_city/services/notification_service.dart';
 import 'package:fianara_smart_city/models/notification_model.dart';
+import 'package:fianara_smart_city/models/report_model.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -77,7 +78,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                     ],
                   ),
-                  isThreeLine: true,
+                  onTap: () {
+                    if (notification.type == 'SIGNALEMENT' && notification.data != null) {
+                      try {
+                        final signalementData = notification.data!['signalement'];
+                        if (signalementData != null) {
+                          final report = ReportModel.fromJson(signalementData);
+                          Navigator.pushNamed(
+                            context,
+                            '/report-detail',
+                            arguments: report,
+                          );
+                        }
+                      } catch (e) {
+                        print('Error navigating to report: $e');
+                      }
+                    }
+                  },
                 );
               },
             ),

@@ -4,7 +4,12 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/notification_model.dart';
 
+import 'package:fianara_smart_city/models/report_model.dart';
+
 class NotificationService {
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   static final GlobalKey<ScaffoldMessengerState> messengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
@@ -90,8 +95,29 @@ class NotificationService {
         backgroundColor: _getColorForType(notification.type),
         actions: [
           TextButton(
+            onPressed: () {
+              state.hideCurrentMaterialBanner();
+              // Redirect to Signalement Detail
+              if (notification.type == 'SIGNALEMENT' && notification.data != null) {
+                try {
+                  final signalementData = notification.data!['signalement'];
+                  if (signalementData != null) {
+                    final report = ReportModel.fromJson(signalementData);
+                    navigatorKey.currentState?.pushNamed(
+                      '/report-detail',
+                      arguments: report,
+                    );
+                  }
+                } catch (e) {
+                  print('Error navigating to report: $e');
+                }
+              }
+            },
+            child: const Text('VOIR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
             onPressed: () => state.hideCurrentMaterialBanner(),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: const Text('FERMER', style: TextStyle(color: Colors.white70)),
           ),
         ],
       ),
