@@ -1,4 +1,3 @@
-// lib/models/signalement_model.dart
 class SignalementModel {
   final String code;
   final String type;
@@ -27,7 +26,7 @@ class SignalementModel {
   factory SignalementModel.fromJson(Map<String, dynamic> json) {
     return SignalementModel(
       code: json['code'] ?? json['codeSignalement'] ?? '',
-      type: json['typeSignalement'] ?? '',
+      type: json['typeSignalement'] ?? json['type'] ?? '',
       description: json['description'] ?? '',
       dateSignalement: json['dateSignalement'] != null
           ? DateTime.parse(json['dateSignalement'])
@@ -36,8 +35,94 @@ class SignalementModel {
       longitude: (json['longitude'] ?? 0).toDouble(),
       codeUtilisateur: json['codeUtilisateur'] ?? '',
       fonctions: List<String>.from(json['fonctions'] ?? []),
-      status: json['status'] ?? 'EN COURS',
+      status: json['status'] ?? 'EN ATTENTE',
       priorite: json['priorite'] ?? 'NORMAL',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'type': type,
+      'description': description,
+      'dateSignalement': dateSignalement.toIso8601String(),
+      'latitude': latitude,
+      'longitude': longitude,
+      'codeUtilisateur': codeUtilisateur,
+      'fonctions': fonctions,
+      'status': status,
+      'priorite': priorite,
+    };
+  }
+
+  // Getter pour la date formatée (ex: "15/05/2024 à 14:30")
+  String get formattedDate {
+    return '${dateSignalement.day}/${dateSignalement.month}/${dateSignalement.year} à ${dateSignalement.hour}:${dateSignalement.minute.toString().padLeft(2, '0')}';
+  }
+
+  // Getter pour le temps écoulé (ex: "Il y a 2 heures", "Il y a 3 jours")
+  String get timeAgo {
+    final now = DateTime.now();
+    final difference = now.difference(dateSignalement);
+
+    if (difference.inDays > 7) {
+      return formattedDate;
+    } else if (difference.inDays > 0) {
+      return 'Il y a ${difference.inDays} jour${difference.inDays > 1 ? 's' : ''}';
+    } else if (difference.inHours > 0) {
+      return 'Il y a ${difference.inHours} heure${difference.inHours > 1 ? 's' : ''}';
+    } else if (difference.inMinutes > 0) {
+      return 'Il y a ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''}';
+    } else {
+      return 'À l\'instant';
+    }
+  }
+
+  // Getter pour le temps court (ex: "2j", "3h", "15min")
+  String get timeAgoShort {
+    final now = DateTime.now();
+    final difference = now.difference(dateSignalement);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}j';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}min';
+    } else {
+      return 'maintenant';
+    }
+  }
+
+  // Getter pour le numéro de référence formaté
+  String get refNumber {
+    return 'REF-${code.padLeft(4, '0')}';
+  }
+
+  // Getter pour savoir si le signalement est récent (moins de 24h)
+  bool get isRecent {
+    final now = DateTime.now();
+    final difference = now.difference(dateSignalement);
+    return difference.inHours < 24;
+  }
+
+  // Getter pour savoir si le signalement est urgent
+  bool get isUrgent {
+    return priorite.toUpperCase() == 'URGENT';
+  }
+
+  // Getter pour savoir si le signalement est en cours
+  bool get isInProgress {
+    return status == 'EN COURS';
+  }
+
+  // Getter pour savoir si le signalement est traité
+  bool get isResolved {
+    return status == 'TRAITÉ';
+  }
+
+  // Getter pour savoir si le signalement est rejeté
+  bool get isRejected {
+    return status == 'REJETÉ';
   }
 }
