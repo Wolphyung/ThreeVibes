@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../constants/colors.dart';
 import '../providers/auth_provider.dart';
-import '../providers/report_provider.dart';
-import '../models/report_model.dart';
+import '../services/signalement_service.dart';
+import '../models/signalement_model.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'map_screen.dart';
 import 'announcements_screen.dart';
@@ -44,46 +44,75 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  List<SignalementModel> _signalements = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSignalements();
+  }
+
+  Future<void> _loadSignalements() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final data = await SignalementService.getAllSignalements();
+      setState(() {
+        _signalements =
+            data.map((json) => SignalementModel.fromJson(json)).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  int get _totalReports => _signalements.length;
+  int get _inProgressReports =>
+      _signalements.where((r) => r.status == 'EN COURS').length;
+  int get _resolvedReports =>
+      _signalements.where((r) => r.status == 'TRAITÉ').length;
+  List<SignalementModel> get _recentReports => _signalements.take(3).toList();
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final reportProvider = Provider.of<ReportProvider>(context);
     final user = authProvider.currentUser;
-
-    final totalReports = reportProvider.reports.length;
-    final resolvedReports = reportProvider.reports
-        .where((r) => r.status == ReportStatus.resolved)
-        .length;
-    final inProgressReports = reportProvider.reports
-        .where((r) => r.status == ReportStatus.inProgress)
-        .length;
 
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () async {
-          await reportProvider.fetchReports();
-        },
+        onRefresh: _loadSignalements,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header simple et élégant
+              // Header
               Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primaryDark,
-                    ],
+                    colors: [AppColors.primary, AppColors.primaryDark],
                   ),
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(30),
                     bottomRight: Radius.circular(30),
                   ),
@@ -100,13 +129,11 @@ class DashboardScreen extends StatelessWidget {
                             const Text(
                               'Bonjour',
                               style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white70,
-                              ),
+                                  fontSize: 14, color: Colors.white70),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              user?.fullName ?? 'Jean Dupont',
+                              user?.fullName ?? 'Citoyen',
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -122,20 +149,15 @@ class DashboardScreen extends StatelessWidget {
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(15),
                           ),
-                          child: const Icon(
-                            Icons.location_city,
-                            color: Colors.white,
-                            size: 24,
-                          ),
+                          child: const Icon(Icons.location_city,
+                              color: Colors.white, size: 24),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(20),
@@ -146,13 +168,9 @@ class DashboardScreen extends StatelessWidget {
                           Icon(Icons.location_on,
                               size: 14, color: Colors.white),
                           SizedBox(width: 4),
-                          Text(
-                            'Fianarantsoa',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
+                          Text('Fianarantsoa',
+                              style:
+                                  TextStyle(fontSize: 12, color: Colors.white)),
                         ],
                       ),
                     ),
@@ -168,7 +186,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _buildStatCard(
                         title: 'Signalements',
-                        value: totalReports.toString(),
+                        value: _totalReports.toString(),
                         icon: Icons.report_problem_outlined,
                         color: AppColors.primary,
                       ),
@@ -177,7 +195,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _buildStatCard(
                         title: 'En cours',
-                        value: inProgressReports.toString(),
+                        value: _inProgressReports.toString(),
                         icon: Icons.hourglass_empty,
                         color: AppColors.warning,
                       ),
@@ -186,7 +204,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _buildStatCard(
                         title: 'Résolus',
-                        value: resolvedReports.toString(),
+                        value: _resolvedReports.toString(),
                         icon: Icons.check_circle_outline,
                         color: AppColors.resolved,
                       ),
@@ -203,11 +221,8 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     const Text(
                       'Actions rapides',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 15),
                     Row(
@@ -217,9 +232,8 @@ class DashboardScreen extends StatelessWidget {
                             icon: Icons.add_location_alt,
                             label: 'Signaler',
                             color: AppColors.error,
-                            onTap: () {
-                              Navigator.pushNamed(context, '/report-form');
-                            },
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/report-form'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -228,9 +242,8 @@ class DashboardScreen extends StatelessWidget {
                             icon: Icons.description_outlined,
                             label: 'Dossiers',
                             color: AppColors.primary,
-                            onTap: () {
-                              Navigator.pushNamed(context, '/dossiers');
-                            },
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/dossiers'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -239,9 +252,7 @@ class DashboardScreen extends StatelessWidget {
                             icon: Icons.map_outlined,
                             label: 'Carte',
                             color: AppColors.primary,
-                            onTap: () {
-                              Navigator.pushNamed(context, '/map');
-                            },
+                            onTap: () => Navigator.pushNamed(context, '/map'),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -250,9 +261,8 @@ class DashboardScreen extends StatelessWidget {
                             icon: Icons.notifications_none,
                             label: 'Annonces',
                             color: AppColors.warning,
-                            onTap: () {
-                              Navigator.pushNamed(context, '/announcements');
-                            },
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/announcements'),
                           ),
                         ),
                       ],
@@ -271,19 +281,13 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     const Text(
                       'Signalements récents',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/reports');
-                      },
+                      onPressed: () => Navigator.pushNamed(context, '/reports'),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                      ),
+                          foregroundColor: AppColors.primary),
                       child: const Text('Voir tout'),
                     ),
                   ],
@@ -293,44 +297,65 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 10),
 
               // Liste des signalements récents
-              Consumer<ReportProvider>(
-                builder: (context, provider, child) {
-                  final recentReports = provider.reports.take(3).toList();
-
-                  if (recentReports.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.all(40),
-                      alignment: Alignment.center,
-                      child: const Column(
-                        children: [
-                          Icon(
-                            Icons.report_problem_outlined,
-                            size: 60,
-                            color: AppColors.textHint,
+              _isLoading
+                  ? const Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : _errorMessage != null
+                      ? Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Column(
+                            children: [
+                              const Icon(Icons.error_outline,
+                                  size: 60, color: Colors.red),
+                              const SizedBox(height: 12),
+                              Text(_errorMessage!,
+                                  style: const TextStyle(color: Colors.red)),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _loadSignalements,
+                                child: const Text('RÉESSAYER'),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 12),
-                          Text(
-                            'Aucun signalement',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
+                        )
+                      : _recentReports.isEmpty
+                          ? Container(
+                              padding: const EdgeInsets.all(40),
+                              alignment: Alignment.center,
+                              child: Column(
+                                children: [
+                                  Icon(Icons.report_problem_outlined,
+                                      size: 60, color: AppColors.textHint),
+                                  const SizedBox(height: 12),
+                                  Text('Aucun signalement',
+                                      style: TextStyle(
+                                          color: AppColors.textSecondary)),
+                                  const SizedBox(height: 8),
+                                  ElevatedButton.icon(
+                                    onPressed: () => Navigator.pushNamed(
+                                        context, '/report-form'),
+                                    icon: const Icon(Icons.add, size: 18),
+                                    label: const Text('Premier signalement'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              itemCount: _recentReports.length,
+                              itemBuilder: (context, index) {
+                                return _buildReportCard(
+                                    context, _recentReports[index]);
+                              },
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: recentReports.length,
-                    itemBuilder: (context, index) {
-                      return _buildReportCard(context, recentReports[index]);
-                    },
-                  );
-                },
-              ),
 
               const SizedBox(height: 80),
             ],
@@ -338,12 +363,8 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ChatbotScreen()),
-          );
-        },
+        onPressed: () => Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const ChatbotScreen())),
         backgroundColor: AppColors.primary,
         elevation: 4,
         child: const Icon(Icons.chat_bubble_outline, size: 26),
@@ -365,35 +386,23 @@ class DashboardScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2)),
         ],
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 24, fontWeight: FontWeight.bold, color: color)),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              color: AppColors.textSecondary,
-            ),
-          ),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 11, color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -413,65 +422,35 @@ class DashboardScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: color.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
             Icon(icon, color: color, size: 24),
             const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
-            ),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w500, color: color)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildReportCard(BuildContext context, ReportModel report) {
-    String statusText = '';
-    Color statusColor;
-
-    switch (report.status) {
-      case ReportStatus.inProgress:
-        statusText = 'EN COURS';
-        statusColor = AppColors.inProgress;
-        break;
-      case ReportStatus.resolved:
-        statusText = 'TRAITÉ';
-        statusColor = AppColors.resolved;
-        break;
-      case ReportStatus.rejected:
-        statusText = 'REJETÉ';
-        statusColor = AppColors.error;
-        break;
-      default:
-        statusText = 'EN ATTENTE';
-        statusColor = AppColors.pending;
-    }
+  Widget _buildReportCard(BuildContext context, SignalementModel report) {
+    String statusText = _getStatusText(report.status);
+    Color statusColor = _getStatusColor(report.status);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border, width: 1),
+        side: BorderSide(color: AppColors.border, width: 1),
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(
-            context,
-            '/report-detail',
-            arguments: report,
-          );
-        },
+        onTap: () =>
+            Navigator.pushNamed(context, '/report-detail', arguments: report),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(15),
@@ -484,44 +463,27 @@ class DashboardScreen extends StatelessWidget {
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  _getReportIcon(report.type),
-                  color: statusColor,
-                  size: 24,
-                ),
+                child: Icon(_getReportIcon(report.type),
+                    color: statusColor, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      report.title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Text(report.type,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600),
+                        maxLines: 1),
                     const SizedBox(height: 4),
-                    Text(
-                      report.locationAddress,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Text(report.description,
+                        style: const TextStyle(
+                            fontSize: 11, color: AppColors.textSecondary),
+                        maxLines: 1),
                     const SizedBox(height: 2),
-                    Text(
-                      report.timeAgo,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textHint,
-                      ),
-                    ),
+                    Text(report.timeAgo,
+                        style: const TextStyle(
+                            fontSize: 10, color: AppColors.textHint)),
                   ],
                 ),
               ),
@@ -531,14 +493,11 @@ class DashboardScreen extends StatelessWidget {
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
-                  ),
-                ),
+                child: Text(statusText,
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor)),
               ),
             ],
           ),
@@ -547,21 +506,47 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  IconData _getReportIcon(ReportType type) {
-    switch (type) {
-      case ReportType.cleanliness:
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'EN COURS':
+        return 'EN COURS';
+      case 'TRAITÉ':
+        return 'TRAITÉ';
+      case 'REJETÉ':
+        return 'REJETÉ';
+      default:
+        return 'EN ATTENTE';
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'EN COURS':
+        return AppColors.inProgress;
+      case 'TRAITÉ':
+        return AppColors.resolved;
+      case 'REJETÉ':
+        return AppColors.error;
+      default:
+        return AppColors.pending;
+    }
+  }
+
+  IconData _getReportIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'propreté':
         return Icons.cleaning_services;
-      case ReportType.infrastructure:
+      case 'infrastructure':
         return Icons.build;
-      case ReportType.security:
+      case 'sécurité':
         return Icons.security;
-      case ReportType.traffic:
+      case 'trafic':
         return Icons.traffic;
-      case ReportType.lighting:
+      case 'éclairage':
         return Icons.lightbulb;
-      case ReportType.waste:
+      case 'déchets':
         return Icons.delete;
-      case ReportType.water:
+      case 'eau':
         return Icons.water_damage;
       default:
         return Icons.report_problem;
